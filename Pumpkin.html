@@ -122,15 +122,26 @@
   .stat .lbl{font-size:12px; color:var(--muted); margin-top:7px;}
   .stat.b .num{color:var(--blue);}
 
-  .downloads{display:flex; gap:10px; margin-bottom:8px; flex-wrap:wrap;}
+  .downloads{display:flex; gap:12px; margin-bottom:8px; flex-wrap:wrap; align-items:stretch;}
   .dl{
-    flex:1; min-width:230px; border:1px solid var(--line); border-radius:var(--r-md); padding:16px 18px;
-    background:var(--paper); color:var(--ink); display:block; text-align:left; cursor:pointer;
-    font-family:inherit; transition:border-color .12s ease, background .12s ease;
+    flex:1; min-width:240px; border:1px solid var(--blue-edge); border-radius:var(--r-md);
+    padding:18px 18px 16px; background:var(--paper); color:var(--ink);
+    display:flex; flex-direction:column; text-align:left; cursor:pointer; font-family:inherit;
+    box-shadow:0 1px 2px rgba(10,10,11,0.04);
+    transition:border-color .12s ease, box-shadow .12s ease, transform .12s ease;
   }
-  .dl:hover{border-color:var(--blue-edge); background:var(--blue-bg);}
-  .dl .dl-title{font-weight:600; font-size:14px; margin-bottom:4px; letter-spacing:-0.01em;}
-  .dl .dl-sub{font-size:12.5px; color:var(--muted); line-height:1.55;}
+  .dl:hover{border-color:var(--blue); box-shadow:0 4px 14px -6px rgba(28,83,229,.35); transform:translateY(-1px);}
+  .dl:active{transform:translateY(0);}
+  .dl .dl-title{display:block; font-weight:650; font-size:15px; margin-bottom:5px; letter-spacing:-0.015em;}
+  .dl .dl-sub{display:block; font-size:12.5px; color:var(--muted); line-height:1.55; flex:1;}
+  .dl .dl-cta{
+    display:inline-flex; align-items:center; justify-content:center; gap:7px; align-self:stretch;
+    margin-top:16px; padding:10px 14px; border-radius:var(--r-sm);
+    background:var(--blue); color:#fff; font-size:13px; font-weight:600; letter-spacing:-0.005em;
+    transition:background .12s ease;
+  }
+  .dl:hover .dl-cta{background:var(--blue-hover);}
+  .dl-ico{width:15px; height:15px; flex:0 0 15px; display:block;}
 
   .tablebar{display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:0 0 12px;}
   .tablebar input{
@@ -262,16 +273,19 @@
     <h2>Downloads</h2>
     <div class="downloads">
       <button class="dl" id="dl-merged">
-        <div class="dl-title">Compass Cross-Reference</div>
-        <div class="dl-sub">Your full Compass file with the phone data folded in. Every original row and column kept, plus a Change log column at the end.</div>
+        <span class="dl-title">Clean It Cross-Reference</span>
+        <span class="dl-sub">Your full Compass file with the phone data folded in. Every original row and column kept, plus a Change log column at the end.</span>
+        <span class="dl-cta"><svg class="dl-ico" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 1.5v8.5m0 0 3.2-3.2M8 10l-3.2-3.2M2 11.5v1.6A1.4 1.4 0 0 0 3.4 14.5h9.2A1.4 1.4 0 0 0 14 13.1v-1.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Download CSV</span>
       </button>
       <button class="dl" id="dl-touched">
-        <div class="dl-title">Phone Cross-Reference</div>
-        <div class="dl-sub">The same file and the same Change log, cut down to only the rows that actually had data added.</div>
+        <span class="dl-title">Phone Cross-Reference</span>
+        <span class="dl-sub">The same file and the same Change log, cut down to only the rows that actually had data added.</span>
+        <span class="dl-cta"><svg class="dl-ico" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 1.5v8.5m0 0 3.2-3.2M8 10l-3.2-3.2M2 11.5v1.6A1.4 1.4 0 0 0 3.4 14.5h9.2A1.4 1.4 0 0 0 14 13.1v-1.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Download CSV</span>
       </button>
       <button class="dl" id="dl-audit">
-        <div class="dl-title">Full Phone File</div>
-        <div class="dl-sub">Your phone file tidied for review: numbers as 954-555-0123, stray symbols and dead columns stripped, Keep? and Remove? at C and D, matched Compass email and Change log at the end.</div>
+        <span class="dl-title">Full Phone File</span>
+        <span class="dl-sub">Your phone file tidied for review: numbers as 954-555-0123, stray symbols and dead columns stripped, Keep? and Remove? at C and D, matched Compass email and Change log at the end.</span>
+        <span class="dl-cta"><svg class="dl-ico" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 1.5v8.5m0 0 3.2-3.2M8 10l-3.2-3.2M2 11.5v1.6A1.4 1.4 0 0 0 3.4 14.5h9.2A1.4 1.4 0 0 0 14 13.1v-1.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Download CSV</span>
       </button>
     </div>
 
@@ -1387,10 +1401,10 @@ function trunc(v, n){ v = String(v || ""); n = n || 42; return v.length > n ? v.
 
 function baseName(n, fallback){ return String(n || fallback).replace(/\.csv$/i, ""); }
 
-// 1. Compass Cross-Reference — the whole Compass file with phone data folded in
+// 1. Clean It Cross-Reference — the whole Compass file with phone data folded in
 function downloadMerged(){
   const R = S.result; if (!R) return;
-  offerFile(baseName(S.compassName, "compass-contacts") + " — Compass Cross-Reference.csv",
+  offerFile(baseName(S.compassName, "compass-contacts") + " — Clean It Cross-Reference.csv",
             toCSV(R.headers, R.rows));
 }
 
