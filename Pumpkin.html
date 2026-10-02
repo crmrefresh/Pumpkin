@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<title>Phone Contact Merger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0A0A0B;
+    --paper:#FFFFFF;
+    --page:#F4F4F5;
+    --blue:#1C53E5;
+    --blue-hover:#1544BE;
+    --blue-bg:rgba(28,83,229,0.06);
+    --blue-edge:rgba(28,83,229,0.30);
+    --line:rgba(10,10,11,0.09);
+    --line-strong:rgba(10,10,11,0.16);
+    --muted:rgba(10,10,11,0.56);
+    --faint:rgba(10,10,11,0.035);
+    --chip-bg:rgba(10,10,11,0.05);
+    --shadow:0 1px 2px rgba(10,10,11,0.05), 0 8px 24px -16px rgba(10,10,11,0.18);
+    --r-lg:16px; --r-md:12px; --r-sm:9px;
+    color-scheme:light;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0; background:var(--page); color:var(--ink);
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:15px; line-height:1.55; letter-spacing:-0.005em;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  }
+  .wrap{
+    max-width:1000px; margin:36px auto 56px; background:var(--paper);
+    border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--shadow);
+    padding:44px 48px 40px;
+  }
+  @media(max-width:720px){
+    .wrap{margin:0; border:0; border-radius:0; padding:28px 20px 36px; box-shadow:none;}
+    body{background:var(--paper);}
+  }
+
+  header{padding-bottom:28px; margin-bottom:32px; border-bottom:1px solid var(--line);}
+  h1{font-size:30px; font-weight:650; letter-spacing:-0.025em; margin:0 0 10px; line-height:1.15;}
+  .sub{color:var(--muted); font-size:15px; max-width:660px; line-height:1.6;}
+
+  h2{
+    font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:0.1em;
+    color:var(--muted); margin:0 0 14px; border:0; padding:0;
+  }
+  h2.spaced{margin-top:38px;}
+
+  /* ---------- intake ---------- */
+  .drops{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media(max-width:700px){.drops{grid-template-columns:1fr}}
+  .dropzone{
+    border:1.5px dashed var(--line-strong); border-radius:var(--r-md); padding:30px 22px;
+    text-align:center; background:#FCFCFD; transition:border-color .12s ease, background .12s ease;
+  }
+  .dropzone.drag,.dropzone:hover{border-color:var(--blue-edge); background:var(--blue-bg);}
+  .dropzone.filled{border-style:solid; border-color:var(--blue-edge); background:var(--blue-bg);}
+  .dropzone input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
+  .dz-title{font-weight:600; font-size:15px; margin-bottom:3px; letter-spacing:-0.01em;}
+  .dz-sub{color:var(--muted); font-size:13px;}
+  .dropzone:focus-within .pick{outline:2px solid var(--blue); outline-offset:2px;}
+  .filename{margin-top:14px; font-size:13.5px; font-weight:600; color:var(--blue); min-height:20px;}
+  .filename .mono{display:block; font-weight:400; color:var(--muted); font-size:12px; margin-top:2px;}
+  .pick{
+    display:inline-block; margin-top:12px; border:1px solid var(--line-strong); border-radius:var(--r-sm);
+    background:var(--paper); color:var(--ink); padding:7px 15px; font-size:13px; font-weight:550;
+    cursor:pointer; transition:border-color .12s ease, background .12s ease;
+  }
+  .pick:hover{border-color:var(--ink); background:var(--faint);}
+
+  /* ---------- options ---------- */
+  .optionrow{
+    display:flex; align-items:flex-start; gap:12px; border:1px solid var(--line);
+    border-radius:var(--r-md); padding:16px 18px; margin-bottom:10px; background:var(--paper);
+  }
+  .optionrow:hover{border-color:var(--line-strong);}
+  .optionrow input[type="checkbox"]{margin-top:2px; width:17px; height:17px; flex-shrink:0; accent-color:var(--blue);}
+  .optionrow label{font-size:13.5px; cursor:pointer;}
+  .optionrow .opt-title{font-weight:600; display:block; margin-bottom:3px; font-size:14px; letter-spacing:-0.01em;}
+  .optionrow .opt-sub{color:var(--muted); font-size:12.5px; line-height:1.6;}
+
+  select, input.txt{
+    width:100%; font-family:inherit; font-size:13.5px; padding:8px 10px; border:1px solid var(--line-strong);
+    border-radius:var(--r-sm); background:var(--paper); color:var(--ink); appearance:auto;
+  }
+  select:focus-visible, input:focus-visible, button:focus-visible, summary:focus-visible{
+    outline:2px solid var(--blue); outline-offset:2px;
+  }
+  select.unset{color:var(--muted);}
+  select.auto{border-color:var(--blue-edge);}
+
+  /* ---------- run ---------- */
+  button.run{
+    margin-top:22px; width:100%; padding:14px; font-size:15px; font-weight:600; letter-spacing:-0.01em;
+    background:var(--blue); color:#fff; border:none; border-radius:var(--r-md); cursor:pointer;
+    font-family:inherit; transition:background .12s ease;
+  }
+  button.run:not(:disabled):hover{background:var(--blue-hover);}
+  button.run:disabled{background:var(--chip-bg); color:var(--muted); cursor:not-allowed;}
+  .status{font-size:13px; color:var(--muted); margin-top:12px; min-height:18px;}
+  .status.warn{
+    color:var(--ink); font-weight:550; background:var(--blue-bg); border:1px solid var(--blue-edge);
+    border-radius:var(--r-sm); padding:11px 14px;
+  }
+
+  section.results{margin-top:44px;}
+  section.results[hidden]{display:none;}
+
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:32px;}
+  @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:#FCFCFD; border:1px solid var(--line); border-radius:var(--r-md); padding:16px 16px 14px;}
+  .stat .num{font-size:28px; font-weight:650; line-height:1; letter-spacing:-0.03em;}
+  .stat .lbl{font-size:12px; color:var(--muted); margin-top:7px;}
+  .stat.b .num{color:var(--blue);}
+
+  .downloads{display:flex; gap:10px; margin-bottom:8px; flex-wrap:wrap;}
+  .dl{
+    flex:1; min-width:230px; border:1px solid var(--line); border-radius:var(--r-md); padding:16px 18px;
+    background:var(--paper); color:var(--ink); display:block; text-align:left; cursor:pointer;
+    font-family:inherit; transition:border-color .12s ease, background .12s ease;
+  }
+  .dl:hover{border-color:var(--blue-edge); background:var(--blue-bg);}
+  .dl .dl-title{font-weight:600; font-size:14px; margin-bottom:4px; letter-spacing:-0.01em;}
+  .dl .dl-sub{font-size:12.5px; color:var(--muted); line-height:1.55;}
+
+  .tablebar{display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:0 0 12px;}
+  .tablebar input{
+    font-family:inherit; font-size:13.5px; padding:9px 12px; border:1px solid var(--line-strong);
+    border-radius:var(--r-sm); background:var(--paper); color:var(--ink); min-width:250px;
+  }
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-size:.86em;}
+
+  .tablewrap{overflow-x:auto; border:1px solid var(--line); border-radius:var(--r-md);}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th,td{text-align:left; padding:11px 14px; vertical-align:top; border:0; border-bottom:1px solid var(--line);}
+  th{font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.07em; color:var(--muted);
+     background:#FCFCFD; white-space:nowrap;}
+  tbody tr:last-child td{border-bottom:0;}
+  td.nm{font-weight:600; white-space:nowrap;}
+  .pill{display:inline-block; font-weight:600; font-size:11px; letter-spacing:0.01em; padding:3px 9px;
+        border-radius:999px; white-space:nowrap;}
+  .pill.merged{background:var(--blue-bg); color:var(--blue); box-shadow:inset 0 0 0 1px var(--blue-edge);}
+  .pill.none{background:var(--chip-bg); color:var(--muted);}
+  .meter{display:flex; align-items:center; gap:8px; white-space:nowrap;}
+  .meter .bar{width:42px; height:5px; background:var(--chip-bg); border-radius:999px; overflow:hidden;}
+  .meter .bar i{display:block; height:100%; background:var(--blue); border-radius:999px;}
+  .chg{color:var(--muted); font-size:12px; line-height:1.55;}
+  .chg b{color:var(--ink); font-weight:600;}
+  .chg .newcol{color:var(--blue); font-weight:600;}
+  .empty{padding:28px 14px; color:var(--muted); text-align:center;}
+  .note{font-size:12px; color:var(--muted); margin-top:12px;}
+
+  /* ---------- disclosure panels ---------- */
+  .refblock{border:1px solid var(--line); border-radius:var(--r-md); margin-bottom:26px; background:var(--paper);}
+  .refblock summary{
+    cursor:pointer; padding:16px 18px; font-weight:600; font-size:14px; letter-spacing:-0.01em;
+    list-style:none; display:flex; align-items:center; justify-content:space-between; gap:14px;
+  }
+  .refblock summary::-webkit-details-marker{display:none;}
+  .refblock summary::after{
+    content:""; width:8px; height:8px; flex:0 0 8px; margin-right:3px;
+    border-right:1.6px solid var(--muted); border-bottom:1.6px solid var(--muted);
+    transform:rotate(45deg) translate(-2px,-2px); transition:transform .15s ease;
+  }
+  .refblock[open] summary::after{transform:rotate(-135deg) translate(-2px,-2px);}
+  .refblock summary .rsub{font-weight:400; color:var(--muted); font-size:12.5px; margin-left:10px;}
+  .refbody{padding:0 18px 18px;}
+  .mapgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:20px;}
+  .mapgroup h4{margin:0 0 2px; font-size:11px; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.08em; color:var(--blue);}
+  .mapgroup .gsub{margin:0 0 10px; font-size:12px; color:var(--muted); min-height:1em;}
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:center; padding:6px 0;
+       border-top:1px solid var(--faint);}
+  .row:first-of-type{border-top:0;}
+  .row label{font-size:12.5px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .ignored{margin:18px 0 0; font-size:12.5px; color:var(--muted); line-height:1.6;}
+  .ignored b{color:var(--ink); font-weight:600;}
+
+  .assumptions{margin-top:40px; font-size:12.5px; color:var(--muted); border-top:1px solid var(--line); padding-top:20px;}
+  .assumptions summary{cursor:pointer; font-weight:600; color:var(--ink); font-size:13.5px;}
+  .assumptions ul{margin:12px 0 0; padding-left:20px;}
+  .assumptions li{margin-bottom:7px; line-height:1.65;}
+
+  .toast{
+    position:fixed; left:50%; bottom:28px; transform:translateX(-50%);
+    background:var(--ink); color:#fff; padding:12px 18px; font-size:13.5px; border-radius:var(--r-sm);
+    z-index:20; max-width:82vw; box-shadow:0 8px 28px -8px rgba(10,10,11,.4);
+  }
+  .toast[hidden]{display:none;}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Phone Contact Merger</h1>
+    <div class="sub">Upload a phone export and a Compass Contacts export (CSV). Contacts are matched on name, scored against every other data point they share, and folded into Compass — filling gaps only, never overwriting what is already there.</div>
+  </header>
+
+  <div class="drops">
+    <div class="dropzone" id="slot-compass">
+      <div class="dz-title">Compass Contacts</div>
+      <div class="dz-sub">The file that gets updated</div>
+      <div class="filename" id="file-compass"></div>
+      <label class="pick" id="pick-compass" for="in-compass">Choose CSV</label>
+      <input type="file" id="in-compass" accept=".csv,text/csv">
+    </div>
+    <div class="dropzone" id="slot-phone">
+      <div class="dz-title">Phone export</div>
+      <div class="dz-sub">Read from, never modified</div>
+      <div class="filename" id="file-phone"></div>
+      <label class="pick" id="pick-phone" for="in-phone">Choose CSV</label>
+      <input type="file" id="in-phone" accept=".csv,text/csv">
+    </div>
+  </div>
+
+  <section id="s2" hidden style="margin-top:24px">
+    <details class="refblock" id="mapblock">
+      <summary><span>Column mapping <span class="rsub">auto-detected from your headers — open to adjust. A Compass field with no column of its own gets one created at the end.</span></span></summary>
+      <div class="refbody">
+        <div class="mapgrid" id="mapgrid"></div>
+        <p class="ignored" id="ignored"></p>
+      </div>
+    </details>
+  </section>
+
+  <section id="s3" style="margin-top:24px">
+    <div class="optionrow">
+      <input type="checkbox" id="o-nick" checked>
+      <label for="o-nick">
+        <span class="opt-title">Treat nicknames as the same name</span>
+        <span class="opt-sub">Bob matches Robert, Liz matches Elizabeth, and about eighty more. A nickname carries the same weight as an exact name: it merges on its own when it is the only Compass row that matches, and when several rows match it merges only into the one that also shares a direct email or phone. Raising the confidence floor above 50 stops a nickname from merging on a name alone. On by default — uncheck to require exact first names.</span>
+      </label>
+    </div>
+
+    <div class="optionrow">
+      <input type="checkbox" id="o-blankname" checked>
+      <label for="o-blankname">
+        <span class="opt-title">Fill in missing names</span>
+        <span class="opt-sub">When an email or phone matches a Compass row with no name on it, write the first and last name in from the phone export.</span>
+      </label>
+    </div>
+
+  </section>
+
+  <button class="run" id="run" disabled>Run the match</button>
+  <div class="status" id="docknote">Load both files to start.</div>
+
+  <section class="results" id="s4" hidden>
+    <h2>Summary</h2>
+    <div class="stats" id="tiles"></div>
+
+    <h2>Downloads</h2>
+    <div class="downloads">
+      <button class="dl" id="dl-merged">
+        <div class="dl-title">Compass Cross-Reference</div>
+        <div class="dl-sub">Your full Compass file with the phone data folded in. Every original row and column kept, plus a Change log column at the end.</div>
+      </button>
+      <button class="dl" id="dl-touched">
+        <div class="dl-title">Phone Cross-Reference</div>
+        <div class="dl-sub">The same file and the same Change log, cut down to only the rows that actually had data added.</div>
+      </button>
+      <button class="dl" id="dl-audit">
+        <div class="dl-title">Full Phone File</div>
+        <div class="dl-sub">Your phone file tidied for review: numbers as 954-555-0123, stray symbols and dead columns stripped, Keep? and Remove? at C and D, matched Compass email and Change log at the end.</div>
+      </button>
+    </div>
+
+    <h2 class="spaced">Preview</h2>
+    <div class="tablebar">
+      <input id="q" type="search" placeholder="Filter by name, email or phone" autocomplete="off">
+      <span class="mono" id="count" style="color:var(--muted)"></span>
+    </div>
+    <div class="tablewrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+    <div class="note">Merged rows sort first. Everything else was left alone — no action needed. <span id="more" hidden></span></div>
+    <div class="note" id="foot" hidden></div>
+  </section>
+
+  <details class="assumptions">
+    <summary>Assumptions this tool makes</summary>
+    <ul>
+      <li>Columns on both files are auto-detected by header name and listed in the Column mapping block, where you can override any of them. First and last name must be mapped on both files before the tool will run.</li>
+      <li>Each candidate scores points for what the two records share: 55 for an exact first + last name, 50 for a nickname, 30 for a matching email, 26 for a matching phone, 9 for an identical street, 4 for a matching zip. 50 is the bar to clear. Names are compared with accents, punctuation and suffixes (Jr, III, MD) stripped.</li>
+      <li>A merge on the name alone is allowed only when that name appears exactly once in each file — nicknames folded together, so Rob and Robert count as the same person when checking. Where it appears more than once on either side, the merge has to be backed by a matching email or phone instead.</li>
+      <li>A name match needs a first <em>and</em> a last name on both sides. A phone contact saved as just "Rob", or a Compass row holding only "Robert", never matches on the name alone — though either will still merge if an email or phone identifies them. A Compass row with no name at all is matched on email or phone and has its name written in.</li>
+      <li>Where several Compass rows match one contact, the merge only goes into the row that also shares a direct email or phone, and only if exactly one row does. Where several phone contacts land on one Compass row, none of them merge.</li>
+      <li>A Compass row with no name at all is matched on email or phone alone, and has its first and last name written in from the phone export.</li>
+      <li>Every contact either clears the parameters or it does not — there is no review queue. Where the tool is in doubt it writes nothing and moves on, which is always the safer error: an unmerged contact still shows up in the Full Phone File with a blank Compass email.</li>
+      <li>An email or phone that belongs to exactly one contact in each file identifies that person on its own, provided the first names do not contradict each other. A missing, shortened or initialised first name cannot contradict anything, and a changed surname does not block it; two plainly different first names do. One that sits on more than one contact in either file — an office line, an info@ address, a shared mobile — is ignored for identification altogether.</li>
+      <li>Phones are compared as digits only, last ten, leading 1 dropped, so formatting differences never block a match. Nothing is reformatted on the way out: values are written exactly as the phone file has them. Dates are the one exception — they are written as MM/DD/YYYY so Compass reads them.</li>
+      <li>A single-column address is split into line 1, line 2, city, state and zip; trailing country lines are dropped. Where the phone export already splits them, those columns are used as-is.</li>
+      <li>If the Compass export has no column for something the phone file holds — no Birth Date column, say — that column is created at the end of the file rather than the data being dropped. It takes the Compass field name, so it re-imports cleanly.</li>
+      <li>A birth date stamped with the current year or later has no real year in it: phones fill in today's when you save a birthday without one. The day and month are kept and the year dropped.</li>
+      <li>Existing Compass values are never overwritten, reformatted or removed. Original columns and row order stay exactly as exported; conflicting phone values are appended as "(Phone)" columns at the end. Every updated row is tagged "CRM: Phone Contact Match".</li>
+      <li>These phone columns are ignored on purpose: gender, categories, web page, related name, department, country, country code, pager, business fax, home fax, nickname, display name.</li>
+      <li>The Full Phone File is cleaned on the way out, and only there — the merge itself never reformats anything. Numbers are rewritten as 954-555-0123 where ten digits are present, control characters, emoji and stray punctuation are stripped, values that are only symbols or placeholders ("n/a", "unknown") are blanked, and three kinds of column are dropped: phone and email type columns, full-name or display-name columns, and any column that is empty from top to bottom.</li>
+      <li>All three files end with a Change log column reading "Matched on name + email (85) | Filled: Primary Mobile Number = 954-555-0123 | New column: Primary Email (Phone) = old@address.com". In the phone file it also records why a contact did not merge.</li>
+      <li>This runs entirely in your browser — no data leaves your machine.</li>
+    </ul>
+  </details>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+"use strict";
+
+/* ============================ utilities ============================ */
+
+const $ = id => document.getElementById(id);
+
+function toast(msg){
+  const t = $("toast");
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(t._t); t._t = setTimeout(()=>{t.hidden = true;}, 4200);
+}
+
+/* ---- CSV in ---- */
+function sniffDelimiter(text){
+  const line = text.slice(0, 8000).split(/\r?\n/)[0] || "";
+  let best = ",", bestN = -1;
+  for (const d of [",",";","\t","|"]){
+    let n = 0, q = false;
+    for (let i=0;i<line.length;i++){
+      const c = line[i];
+      if (c === '"') q = !q;
+      else if (c === d && !q) n++;
+    }
+    if (n > bestN){ bestN = n; best = d; }
+  }
+  return best;
+}
+
+function parseCSV(text){
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const D = sniffDelimiter(text);
+  const rows = []; let row = []; let field = ""; let inQ = false; let i = 0;
+  while (i < text.length){
+    const c = text[i];
+    if (inQ){
+      if (c === '"'){
+        if (text[i+1] === '"'){ field += '"'; i += 2; continue; }
+        inQ = false; i++; continue;
+      }
+      field += c; i++; continue;
+    }
+    if (c === '"'){ inQ = true; i++; continue; }
+    if (c === D){ row.push(field); field = ""; i++; continue; }
+    if (c === "\r"){ if (text[i+1] === "\n") i++; row.push(field); field = ""; rows.push(row); row = []; i++; continue; }
+    if (c === "\n"){ row.push(field); field = ""; rows.push(row); row = []; i++; continue; }
+    field += c; i++;
+  }
+  row.push(field); rows.push(row);
+  while (rows.length && rows[rows.length-1].every(v => String(v).trim() === "")) rows.pop();
+  if (!rows.length) return { headers: [], rows: [] };
+  const headers = rows.shift().map(h => String(h).replace(/^\uFEFF/,"").trim());
+  const w = headers.length;
+  const data = rows.map(r => { const a = r.slice(0, w); while (a.length < w) a.push(""); return a; });
+  return { headers, rows: data };
+}
+
+/* ---- CSV out ---- */
+function toCSV(headers, rows){
+  const esc = v => {
+    v = v == null ? "" : String(v);
+    return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v;
+  };
+  const out = [headers.map(esc).join(",")];
+  for (const r of rows) out.push(r.map(esc).join(","));
+  return "\uFEFF" + out.join("\r\n") + "\r\n";
+}
+
+async function offerFile(filename, text){
+  const blob = new Blob([text], { type:"text/csv;charset=utf-8" });
+
+  // Plain browser download — works everywhere except inside the claude.ai artifact frame.
+  try {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; a.rel = "noopener";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    if (!(window.claude && window.claude.use)){ toast("Saved " + filename); return; }
+  } catch (e){ /* fall through */ }
+
+  // Inside claude.ai the anchor is inert, so ask the host to hand the file over.
+  try {
+    const dl = window.claude && window.claude.use ? await window.claude.use("downloads") : null;
+    if (dl && dl.save){ await dl.save({ filename, data: blob }); toast("Saved " + filename); return; }
+  } catch (e){
+    toast(e && e.code === "declined" ? "Download cancelled." : "Couldn't save the file here — try opening this page in its own browser tab.");
+    return;
+  }
+  toast("Saved " + filename);
+}
+
+/* ---- normalisers ---- */
+const strip = s => String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const normText = s => strip(s).toLowerCase().replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
+const normName = s => normText(s).replace(/\b(jr|sr|ii|iii|iv|md|dds|esq|phd)\b/g,"").replace(/\s+/g," ").trim();
+const normEmail = s => strip(s).toLowerCase().trim();
+function normPhone(s){
+  let d = String(s == null ? "" : s).replace(/\D/g,"");
+  if (d.length === 11 && d[0] === "1") d = d.slice(1);
+  if (d.length > 10) d = d.slice(-10);
+  return d.length >= 7 ? d : "";
+}
+const normZip = s => { const m = String(s||"").match(/\d{5}/); return m ? m[0] : ""; };
+const STREET_ABBR = {street:"st",str:"st",road:"rd",avenue:"ave",av:"ave",boulevard:"blvd",drive:"dr",lane:"ln",court:"ct",circle:"cir",place:"pl",terrace:"ter",parkway:"pkwy",highway:"hwy",trail:"trl",square:"sq",north:"n",south:"s",east:"e",west:"w",northeast:"ne",northwest:"nw",southeast:"se",southwest:"sw",apartment:"apt",suite:"ste",unit:"unit",building:"bldg",floor:"fl"};
+function normStreet(s){
+  return normText(s).split(" ").map(w => STREET_ABBR[w] || w).join(" ").trim();
+}
+
+/* ---- nicknames ---- */
+const NICK_SETS = [
+ ["robert","rob","bob","bobby","bert"],["william","will","bill","billy","willy"],["michael","mike","mick","mickey"],
+ ["james","jim","jimmy","jamie"],["david","dave","davey"],["daniel","dan","danny"],["thomas","tom","tommy"],
+ ["christopher","chris","topher"],["katherine","catherine","kathryn","kate","katie","kathy","cathy","kat"],
+ ["elizabeth","liz","lizzie","beth","betsy","betty","eliza"],["richard","rick","rich","dick","ricky"],
+ ["stephen","steven","steve"],["joseph","joe","joey"],["anthony","tony"],["matthew","matt"],
+ ["nicholas","nick","nicky"],["benjamin","ben","benny"],["samuel","sam","sammy"],["andrew","andy","drew"],
+ ["jennifer","jen","jenny","jenn"],["jessica","jess","jessie"],["alexander","alex","xander"],["alexandra","alex","sandra","sasha"],
+ ["gregory","greg"],["edward","ed","eddie","ted","teddy"],["patricia","pat","patty","trish","tricia"],["patrick","pat","paddy"],
+ ["deborah","debra","deb","debbie"],["susan","sue","susie","suzy"],["timothy","tim","timmy"],["ronald","ron","ronnie"],
+ ["donald","don","donnie"],["kenneth","ken","kenny"],["lawrence","larry","laurence"],["gerald","jerry","gerry"],
+ ["charles","charlie","chuck","chas"],["francis","frank","frankie"],["frances","fran","francie"],["henry","hank","harry"],
+ ["john","jack","johnny","jon"],["jonathan","jon","jonny"],["margaret","maggie","meg","peggy","marge"],
+ ["rebecca","becky","becca"],["victoria","vicky","tori"],["philip","phillip","phil"],["arthur","art","artie"],
+ ["cynthia","cindy"],["amanda","mandy"],["sandra","sandy"],["barbara","barb","babs"],["judith","judy"],
+ ["caroline","carolyn","carol"],["constance","connie"],["dorothy","dot","dottie"],["abigail","abby","gail"],
+ ["nathan","nate"],["nathaniel","nate","nathan"],["zachary","zach","zack"],["joshua","josh"],["jacob","jake"],
+ ["maxwell","max"],["raymond","ray"],["walter","walt"],["eugene","gene"],["martin","marty"],["mitchell","mitch"],
+ ["russell","russ"],["vincent","vince","vinny"],["wesley","wes"],["theodore","ted","teddy","theo"],
+ ["albert","al","bert"],["alfred","al","fred"],["frederick","fred","freddy"],["harold","hal","harry"],
+ ["howard","howie"],["leonard","len","lenny"],["marcus","marc","mark"],["peter","pete"],["ralph","ralphie"],
+ ["roger","rog"],["scott","scotty"],["terrence","terry"],["vernon","vern"],["angela","angie"],["christine","christina","chris","chrissy","tina"],
+ ["danielle","dani"],["diana","diane","di"],["eleanor","ellie","nell"],["evelyn","evie"],["gabriel","gabe"],
+ ["gabriella","gabby"],["isabella","bella","izzy"],["kimberly","kim"],["laura","lauren","laurie"],["linda","lindy"],
+ ["lisa","liz"],["melissa","mel","missy"],["michelle","shelly","mich"],["natalie","nat"],["nancy","nan"],
+ ["olivia","liv","livy"],["pamela","pam"],["rachel","rach"],["samantha","sam","sammy"],["sharon","shari"],
+ ["stephanie","steph"],["theresa","teresa","terry","tess"],["veronica","ronnie"],["virginia","ginny","ginger"],
+ ["yolanda","yoli"],["jose","pepe"],["francisco","paco","pancho"],["guillermo","memo"],["eduardo","eddy","lalo"],
+ ["antonio","tony","tono"],["alejandro","alex","ale"],["maria","mary","mari"],["guadalupe","lupe"],["ignacio","nacho"]
+];
+const NICK = (() => {
+  const m = new Map();
+  NICK_SETS.forEach((set, i) => set.forEach(n => {
+    if (!m.has(n)) m.set(n, []);
+    m.get(n).push("g" + i);
+  }));
+  return m;
+})();
+function nickKeys(first){
+  const f = normName(first).split(" ")[0] || "";
+  if (!f) return [];
+  const g = NICK.get(f);
+  return g ? g.slice() : ["=" + f];
+}
+
+/* ---- addresses ---- */
+const STATES = {alabama:"AL",alaska:"AK",arizona:"AZ",arkansas:"AR",california:"CA",colorado:"CO",connecticut:"CT",delaware:"DE","district of columbia":"DC",florida:"FL",georgia:"GA",hawaii:"HI",idaho:"ID",illinois:"IL",indiana:"IN",iowa:"IA",kansas:"KS",kentucky:"KY",louisiana:"LA",maine:"ME",maryland:"MD",massachusetts:"MA",michigan:"MI",minnesota:"MN",mississippi:"MS",missouri:"MO",montana:"MT",nebraska:"NE",nevada:"NV","new hampshire":"NH","new jersey":"NJ","new mexico":"NM","new york":"NY","north carolina":"NC","north dakota":"ND",ohio:"OH",oklahoma:"OK",oregon:"OR",pennsylvania:"PA","puerto rico":"PR","rhode island":"RI","south carolina":"SC","south dakota":"SD",tennessee:"TN",texas:"TX",utah:"UT",vermont:"VT",virginia:"VA",washington:"WA","west virginia":"WV",wisconsin:"WI",wyoming:"WY"};
+const STATE_CODES = new Set(Object.values(STATES));
+const COUNTRIES = new Set(["usa","us","u s a","united states","united states of america","america","can","canada"]);
+const UNIT_RE = /^(apt|apartment|unit|ste|suite|#|no|number|fl|floor|rm|room|bldg|building|lot|trlr|space|spc|po box|p o box)\b/i;
+
+function parseAddress(raw){
+  const out = { line1:"", line2:"", city:"", state:"", zip:"" };
+  if (!raw) return out;
+  let s = String(raw).replace(/\r/g,"").trim();
+  if (!s) return out;
+  let parts = s.split(/\n+/).map(t => t.trim()).filter(Boolean);
+  parts = parts.flatMap(p => p.split(/\s*,\s*/)).map(t => t.trim()).filter(Boolean);
+  while (parts.length && COUNTRIES.has(normText(parts[parts.length-1]))) parts.pop();
+  if (!parts.length) return out;
+
+  // zip + state from the tail
+  let tail = parts[parts.length-1];
+  const zipM = tail.match(/(\d{5})(?:-\d{4})?\s*$/);
+  if (zipM){
+    out.zip = zipM[1];
+    tail = tail.slice(0, zipM.index).trim();
+    if (tail) parts[parts.length-1] = tail; else parts.pop();
+  }
+  if (parts.length){
+    tail = parts[parts.length-1];
+    const words = tail.split(/\s+/);
+    const last = words[words.length-1] || "";
+    if (STATE_CODES.has(last.toUpperCase().replace(/\./g,""))){
+      out.state = last.toUpperCase().replace(/\./g,"");
+      words.pop();
+      const rest = words.join(" ").trim();
+      if (rest) parts[parts.length-1] = rest; else parts.pop();
+    } else if (STATES[normText(tail)]){
+      out.state = STATES[normText(tail)];
+      parts.pop();
+    } else {
+      // "Hollywood FL" style already handled; try two-word state names
+      const two = words.slice(-2).join(" ");
+      if (STATES[normText(two)]){
+        out.state = STATES[normText(two)];
+        const rest = words.slice(0,-2).join(" ").trim();
+        if (rest) parts[parts.length-1] = rest; else parts.pop();
+      }
+    }
+  }
+  if ((out.zip || out.state) && parts.length > 1){
+    out.city = parts.pop();
+  } else if (parts.length > 2){
+    out.city = parts.pop();
+  }
+  if (parts.length){
+    const unitIdx = parts.findIndex((p,i) => i > 0 && UNIT_RE.test(p));
+    if (unitIdx > 0){
+      out.line2 = parts.splice(unitIdx,1)[0];
+    } else if (parts.length > 1){
+      out.line2 = parts.pop();
+    }
+    out.line1 = parts.join(" ").trim();
+  }
+  return out;
+}
+
+/* ---- dates ---- */
+const MONTHS = {jan:1,january:1,feb:2,february:2,mar:3,march:3,apr:4,april:4,may:5,jun:6,june:6,jul:7,july:7,aug:8,august:8,sep:9,sept:9,september:9,oct:10,october:10,nov:11,november:11,dec:12,december:12};
+function parseDate(raw){
+  if (!raw) return null;
+  const s = String(raw).trim();
+  if (!s) return null;
+  let m;
+  if ((m = s.match(/^-{1,2}(\d{2})-?(\d{2})$/))) return { y:null, m:+m[1], d:+m[2] };
+  if ((m = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/))) return { y:+m[1], m:+m[2], d:+m[3] };
+  if ((m = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})/))){
+    let y = +m[3]; if (y < 100) y += y > 40 ? 1900 : 2000;
+    return { y, m:+m[1], d:+m[2] };
+  }
+  if ((m = s.match(/^(\d{1,2})[-/](\d{1,2})$/))) return { y:null, m:+m[1], d:+m[2] };
+  if ((m = s.match(/^([A-Za-z]+)\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s*(\d{4})?/))){
+    const mo = MONTHS[m[1].toLowerCase()];
+    if (mo) return { y: m[3] ? +m[3] : null, m: mo, d: +m[2] };
+  }
+  if ((m = s.match(/^(\d{1,2})\s+([A-Za-z]+)\.?,?\s*(\d{4})?/))){
+    const mo = MONTHS[m[2].toLowerCase()];
+    if (mo) return { y: m[3] ? +m[3] : null, m: mo, d: +m[1] };
+  }
+  return null;
+}
+function fmtDate(raw, mode){
+  if (mode === "RAW") return String(raw).trim();
+  const d = parseDate(raw);
+  if (!d) return String(raw).trim();
+  const p2 = n => String(n).padStart(2,"0");
+  if (mode === "ISO") return d.y ? d.y + "-" + p2(d.m) + "-" + p2(d.d) : "--" + p2(d.m) + "-" + p2(d.d);
+  return d.y ? p2(d.m) + "/" + p2(d.d) + "/" + d.y : p2(d.m) + "/" + p2(d.d);
+}
+function dateKey(raw){
+  const d = parseDate(raw);
+  if (!d) return normText(raw);
+  return d.m + "-" + d.d + (d.y ? "-" + d.y : "");
+}
+function fmtPhone(raw, mode){
+  if (mode === "RAW") return String(raw).trim();
+  const d = normPhone(raw);
+  if (mode === "DIGITS") return d || String(raw).trim();
+  if (d.length === 10) return "(" + d.slice(0,3) + ") " + d.slice(3,6) + "-" + d.slice(6);
+  return String(raw).trim();
+}
+
+/* ============================ field model ============================ */
+
+const TARGETS = [
+  { g:"Identity", key:"first_name", label:"First Name", type:"name",  guesses:["first name","firstname","given name","first"] },
+  { g:"Identity", key:"last_name",  label:"Last Name",  type:"name",  guesses:["last name","lastname","family name","surname","last"] },
+  { g:"Identity", key:"tags",       label:"Tags",       type:"tags",  guesses:["tags","tag","labels","groups"] },
+  { g:"Contact",  key:"mobile",     label:"Primary Mobile Number", type:"phone", guesses:["primary mobile number","primary mobile phone","mobile number","mobile phone","cell phone","primary phone","mobile","cell"] },
+  { g:"Contact",  key:"work_phone", label:"Primary Work Phone",    type:"phone", guesses:["primary work phone","work phone","business phone","office phone","work number"] },
+  { g:"Contact",  key:"email",      label:"Primary Email",         type:"email", guesses:["primary email","primary email address","email address","email","e mail"] },
+  { g:"Home address", key:"home1",     label:"Primary Home Address Line 1", type:"text", guesses:["primary home address line 1","home address line 1","home address 1","home street","home address"] },
+  { g:"Home address", key:"home2",     label:"Primary Home Address Line 2", type:"text", guesses:["primary home address line 2","home address line 2","home address 2","home unit"] },
+  { g:"Home address", key:"home_city",  label:"Primary Home City",  type:"text", guesses:["primary home city","home city","home address city"] },
+  { g:"Home address", key:"home_state", label:"Primary Home State", type:"text", guesses:["primary home state","home state","home address state","home region"] },
+  { g:"Home address", key:"home_zip",   label:"Primary Home Zip",   type:"text", guesses:["primary home zip","primary home postal code","home zip","home zip code","home postal code"] },
+  { g:"Work address", key:"work1",     label:"Primary Work Address Line 1", type:"text", guesses:["primary work address line 1","work address line 1","work address 1","business address line 1","work street","work address","business address"] },
+  { g:"Work address", key:"work2",     label:"Primary Work Address Line 2", type:"text", guesses:["primary work address line 2","work address line 2","work address 2","business address line 2","work unit"] },
+  { g:"Work address", key:"work_city",  label:"Primary Work City",  type:"text", guesses:["primary work city","work city","business city","work address city"] },
+  { g:"Work address", key:"work_state", label:"Primary Work State", type:"text", guesses:["primary work state","work state","business state","work region"] },
+  { g:"Work address", key:"work_zip",   label:"Primary Work Zip",   type:"text", guesses:["primary work zip","primary work postal code","work zip","work zip code","business zip","work postal code"] },
+  { g:"Details",  key:"birthday",    label:"Birth Date",  type:"date", guesses:["birth date","birthdate","birthday","date of birth","dob"] },
+  { g:"Details",  key:"title",       label:"Title",       type:"text", guesses:["title","job title","position"] },
+  { g:"Details",  key:"company",     label:"Company",     type:"text", guesses:["company","organization","organisation","employer","company name"] },
+  { g:"Details",  key:"anniversary", label:"Anniversary", type:"date", guesses:["anniversary","anniversary date","wedding anniversary"] }
+];
+
+const SOURCES = [
+  { g:"Identity", key:"first_name", label:"First Name", guesses:["first name","firstname","given name","first"] },
+  { g:"Identity", key:"last_name",  label:"Last Name",  guesses:["last name","lastname","family name","surname","last"] },
+  { g:"Contact",  key:"mobile",     label:"Phone Number",   guesses:["phone number","mobile phone","cell phone","mobile","cell","home phone","phone 1 value","phone 1","primary phone","phone"] },
+  { g:"Contact",  key:"work_phone", label:"Business Phone", guesses:["phone work","business phone","work phone","office phone","company phone","phone 2 value"] },
+  { g:"Contact",  key:"email",      label:"Email",          guesses:["email","e mail","email address","email 1 value","home email","personal email"] },
+  { g:"Home address", key:"home_combined", label:"Home Address (one column)", guesses:["home address","home address formatted","address 1 formatted","home street"] },
+  { g:"Home address", key:"home1",     label:"…or Home Street",  guesses:["home address line 1","home street","address 1 street","home address 1"] },
+  { g:"Home address", key:"home2",     label:"…or Home Line 2",  guesses:["home address line 2","home extended address","address 1 extended address","home address 2"] },
+  { g:"Home address", key:"home_city",  label:"…or Home City",   guesses:["home city","address 1 city","home address city"] },
+  { g:"Home address", key:"home_state", label:"…or Home State",  guesses:["home state","address 1 region","home region","home address state"] },
+  { g:"Home address", key:"home_zip",   label:"…or Home Zip",    guesses:["home address zip","home address postal code","home zip","home postal code","address 1 postal code","home zip code"] },
+  { g:"Work address", key:"work_combined", label:"Business Address (one column)", guesses:["business address","work address","business address formatted","address 2 formatted","work street"] },
+  { g:"Work address", key:"work1",     label:"…or Business Street", guesses:["business address line 1","work address line 1","address 2 street","business street"] },
+  { g:"Work address", key:"work2",     label:"…or Business Line 2", guesses:["business address line 2","work address line 2","address 2 extended address"] },
+  { g:"Work address", key:"work_city",  label:"…or Business City",  guesses:["business city","work city","address 2 city"] },
+  { g:"Work address", key:"work_state", label:"…or Business State", guesses:["business state","work state","address 2 region"] },
+  { g:"Work address", key:"work_zip",   label:"…or Business Zip",   guesses:["business address zip","work address zip","business zip","work zip","address 2 postal code","business postal code"] },
+  { g:"Details",  key:"birthday",    label:"Birthday",     guesses:["birthday","birth date","birthdate","date of birth","dob"] },
+  { g:"Details",  key:"title",       label:"Job Title",    guesses:["job title","title","position","occupation"] },
+  { g:"Details",  key:"company",     label:"Organization", guesses:["organization","organisation","company","employer"] },
+  { g:"Details",  key:"anniversary", label:"Anniversary",  guesses:["anniversary","anniversary date"] }
+];
+
+/* phone-export columns we deliberately never read */
+const SKIP_HINTS = ["gender","categories","category","web page","website","url","related name","department","country","country code","pager","business fax","home fax","fax","nickname","display name","notes","photo","groups","labels"];
+
+function headerKey(h){ return normText(h); }
+
+function autoMap(headers, fields){
+  const used = new Set();
+  const scored = [];
+  headers.forEach((h, idx) => {
+    const hk = headerKey(h);
+    if (!hk) return;
+    fields.forEach(f => {
+      let best = 0;
+      f.guesses.forEach(g => {
+        const gk = normText(g);
+        let s = 0;
+        if (hk === gk) s = 100;
+        else if (hk.replace(/\s/g,"") === gk.replace(/\s/g,"")) s = 96;
+        else if (hk.startsWith(gk + " ") || hk.endsWith(" " + gk)) s = 82;
+        else if (hk.includes(gk) && gk.length > 3) s = 72;
+        else if (gk.includes(hk) && hk.length > 4) s = 58;
+        if (s > best) best = s;
+      });
+      if (best >= 58) scored.push({ score: best, field: f.key, idx });
+    });
+  });
+  scored.sort((a,b) => b.score - a.score);
+  const map = {};
+  for (const s of scored){
+    if (map[s.field] != null) continue;
+    if (used.has(s.idx)) continue;
+    map[s.field] = s.idx;
+    used.add(s.idx);
+  }
+  return map;
+}
+
+/* ============================ state ============================ */
+
+const S = {
+  compass: null, phone: null,
+  compassName: "", phoneName: "",
+  tgt: {}, src: {},
+  result: null,
+  tab: "all"
+};
+
+/* ============================ intake ============================ */
+
+function wireSlot(which){
+  const input = $("in-" + which);
+  const slot = $("slot-" + which);
+  input.addEventListener("change", e => { if (e.target.files[0]) loadFile(which, e.target.files[0]); });
+  ["dragenter","dragover"].forEach(ev => slot.addEventListener(ev, e => { e.preventDefault(); slot.classList.add("drag"); }));
+  ["dragleave","drop"].forEach(ev => slot.addEventListener(ev, e => { e.preventDefault(); slot.classList.remove("drag"); }));
+  slot.addEventListener("drop", e => {
+    const f = e.dataTransfer.files[0];
+    if (f) loadFile(which, f);
+  });
+}
+wireSlot("compass"); wireSlot("phone");
+
+function loadFile(which, file){
+  const r = new FileReader();
+  r.onerror = () => toast("That file couldn't be read. Try re-exporting it as CSV.");
+  r.onload = () => {
+    let parsed;
+    try { parsed = parseCSV(String(r.result)); }
+    catch (e){ toast("That file isn't valid CSV."); return; }
+    if (!parsed.headers.length || !parsed.rows.length){
+      toast("No rows found in " + file.name + ". It needs a header row plus at least one contact.");
+      return;
+    }
+    S[which] = parsed;
+    S[which + "Name"] = file.name;
+    $("file-" + which).innerHTML = esc(file.name) +
+      '<span class="mono">' + parsed.rows.length.toLocaleString() +
+      ' rows · ' + parsed.headers.length + ' columns</span>';
+    $("slot-" + which).classList.add("filled");
+    const lbl = $("pick-" + which);
+    if (lbl) lbl.textContent = "Replace file";
+    ready();
+  };
+  r.readAsText(file);
+}
+
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+}
+
+function ready(){
+  if (!S.compass || !S.phone){
+    $("docknote").textContent = S.compass || S.phone ? "One more file to go." : "Load both files to start.";
+    return;
+  }
+  S.tgt = autoMap(S.compass.headers, TARGETS);
+  S.src = autoMap(S.phone.headers, SOURCES);
+  // don't let a combined address column win if the components were found
+  ["home","work"].forEach(p => {
+    if (S.src[p + "1"] != null && S.src[p + "_combined"] != null && S.src[p + "1"] === S.src[p + "_combined"]) delete S.src[p + "_combined"];
+  });
+  buildMapping();
+  $("s2").hidden = false;
+  checkRun();
+  const gaps = ["first_name","last_name","email","mobile"].filter(k => S.tgt[k] == null || S.src[k] == null);
+  if (gaps.length) $("mapblock").open = true;
+}
+
+/* ============================ mapping UI ============================ */
+
+function buildMapping(){
+  const grid = $("mapgrid");
+  grid.innerHTML = "";
+  const gnames = ["Identity","Contact","Home address","Work address","Details"];
+  gnames.forEach((g, gi) => {
+    const wrap = document.createElement("div");
+    wrap.className = "mapgroup";
+    wrap.innerHTML = '<h4>' + g + '</h4>' +
+      (gi === 0 ? '<p class="gsub">Top select reads the phone export, bottom select writes to Compass.</p>' : '<p class="gsub">&nbsp;</p>');
+    const srcF = SOURCES.filter(f => f.g === g);
+    const tgtF = TARGETS.filter(f => f.g === g);
+    const keys = [];
+    srcF.forEach(f => { if (!keys.includes(f.key)) keys.push(f.key); });
+    tgtF.forEach(f => { if (!keys.includes(f.key)) keys.push(f.key); });
+    keys.forEach(k => {
+      const sf = srcF.find(f => f.key === k);
+      const tf = tgtF.find(f => f.key === k);
+      const row = document.createElement("div");
+      row.className = "row";
+      const lbl = document.createElement("label");
+      lbl.textContent = sf ? sf.label : (tf ? tf.label + " (Compass only)" : k);
+      lbl.title = lbl.textContent;
+      row.appendChild(lbl);
+      const cell = document.createElement("div");
+      cell.style.display = "grid";
+      cell.style.gap = "4px";
+      if (sf) cell.appendChild(mkSelect("src", sf.key, S.phone.headers, "phone column"));
+      if (tf) cell.appendChild(mkSelect("tgt", tf.key, S.compass.headers, "Compass column"));
+      row.appendChild(cell);
+      wrap.appendChild(row);
+    });
+    grid.appendChild(wrap);
+  });
+  renderIgnored();
+}
+
+function mkSelect(side, key, headers, what){
+  const sel = document.createElement("select");
+  sel.dataset.side = side; sel.dataset.key = key;
+  const none = document.createElement("option");
+  none.value = ""; none.textContent = "— not in file —";
+  sel.appendChild(none);
+  headers.forEach((h, i) => {
+    const o = document.createElement("option");
+    o.value = String(i);
+    o.textContent = (side === "tgt" ? "→ " : "") + (h || "(column " + (i+1) + ")");
+    sel.appendChild(o);
+  });
+  const cur = S[side][key];
+  if (cur != null){ sel.value = String(cur); sel.classList.add("auto"); }
+  else sel.classList.add("unset");
+  sel.title = what;
+  sel.addEventListener("change", () => {
+    if (sel.value === "") delete S[side][key];
+    else S[side][key] = +sel.value;
+    sel.classList.toggle("unset", sel.value === "");
+    sel.classList.remove("auto");
+    renderIgnored();
+    checkRun();
+  });
+  return sel;
+}
+
+function renderIgnored(){
+  if (!S.phone) return;
+  const used = new Set(Object.values(S.src));
+  const list = S.phone.headers
+    .map((h,i) => ({h,i}))
+    .filter(x => !used.has(x.i) && x.h)
+    .map(x => x.h);
+  const skipped = list.filter(h => SKIP_HINTS.some(k => headerKey(h).includes(k)));
+  $("ignored").innerHTML = list.length
+    ? '<b>' + list.length + ' phone columns are not being read:</b> ' + esc(list.join(", ")) +
+      (skipped.length ? ' <span style="color:var(--brand)">(' + skipped.length + ' of these are on the standard skip list)</span>' : '')
+    : '<b>Every phone column is mapped.</b>';
+}
+
+// A Compass export is full of "Primary ..." columns; a phone export has none.
+// Cheap, but it catches the two ways this goes wrong: the same file in both
+// slots, and the two files the wrong way round.
+const compassness = h => h.filter(x => /^primary\b/i.test(String(x).trim())).length;
+
+function fileWarning(){
+  if (!S.compass || !S.phone) return null;
+  const sameHeaders = S.compass.headers.join("\u0001") === S.phone.headers.join("\u0001");
+  if (sameHeaders || S.compassName === S.phoneName){
+    return { stop:true, msg:"Both slots hold the same file. Cross-referencing a file against itself will tag every row and copy its own columns around — load your Compass export on the left." };
+  }
+  const c = compassness(S.compass.headers), ph = compassness(S.phone.headers);
+  if (ph >= 3 && ph > c){
+    return { stop:false, msg:"These look reversed: the file in the phone slot has " + ph + " \u201cPrimary \u2026\u201d columns and the Compass slot has " + c + ". Check before you run." };
+  }
+  return null;
+}
+
+function checkRun(){
+  const mapped = S.compass && S.phone &&
+    S.tgt.first_name != null && S.tgt.last_name != null &&
+    S.src.first_name != null && S.src.last_name != null;
+  const warn = fileWarning();
+  $("run").disabled = !mapped || !!(warn && warn.stop);
+  $("docknote").classList.toggle("warn", !!warn);
+  $("docknote").textContent = warn ? warn.msg
+    : mapped
+      ? "Ready. Nothing is written until you download — the file on your machine is untouched."
+      : (S.compass && S.phone
+          ? "Open Column mapping and set First Name and Last Name on both files."
+          : "Load both files to start.");
+}
+
+/* ============================ the match ============================ */
+
+const THIS_YEAR = new Date().getFullYear();
+const pad2 = n => String(n).padStart(2, "0");
+
+const ADDR_KEYS = { home: ["home1","home2","home_city","home_state","home_zip"], work: ["work1","work2","work_city","work_state","work_zip"] };
+
+function readSource(row){
+  const g = k => { const i = S.src[k]; return i == null ? "" : String(row[i] || "").trim(); };
+  const o = {
+    first: g("first_name"), last: g("last_name"),
+    mobile: g("mobile"), work_phone: g("work_phone"), email: g("email"),
+    birthday: g("birthday"), title: g("title"), company: g("company"), anniversary: g("anniversary")
+  };
+  ["home","work"].forEach(p => {
+    const keys = ADDR_KEYS[p];
+    let a = { line1:g(keys[0]), line2:g(keys[1]), city:g(keys[2]), state:g(keys[3]), zip:g(keys[4]) };
+    const combined = g(p + "_combined");
+    if (combined && !a.line1 && !a.city && !a.zip) a = parseAddress(combined);
+    else if (combined && !a.line1) { const p2 = parseAddress(combined); a.line1 = p2.line1; a.line2 = a.line2 || p2.line2; }
+    o[keys[0]] = a.line1; o[keys[1]] = a.line2; o[keys[2]] = a.city; o[keys[3]] = a.state; o[keys[4]] = a.zip;
+  });
+  return o;
+}
+
+function readTarget(row){
+  const g = k => { const i = S.tgt[k]; return i == null ? "" : String(row[i] || "").trim(); };
+  const o = { first: g("first_name"), last: g("last_name"), mobile: g("mobile"), work_phone: g("work_phone"), email: g("email") };
+  ["home1","home2","home_city","home_state","home_zip","work1","work2","work_city","work_state","work_zip"].forEach(k => { o[k] = g(k); });
+  return o;
+}
+
+const MERGE_FIELDS = [
+  { key:"mobile",      type:"phone" }, { key:"work_phone", type:"phone" }, { key:"email", type:"email" },
+  { key:"home1",       type:"street" },{ key:"home2",      type:"street" },{ key:"home_city", type:"text" },
+  { key:"home_state",  type:"text" },  { key:"home_zip",   type:"zip" },
+  { key:"work1",       type:"street" },{ key:"work2",      type:"street" },{ key:"work_city", type:"text" },
+  { key:"work_state",  type:"text" },  { key:"work_zip",   type:"zip" },
+  { key:"birthday",    type:"date" },  { key:"title",      type:"text" }, { key:"company", type:"text" },
+  { key:"anniversary", type:"date" }
+];
+
+function sameValue(a, b, type){
+  if (!a || !b) return false;
+  switch (type){
+    case "phone":  return normPhone(a) !== "" && normPhone(a) === normPhone(b);
+    case "email":  return normEmail(a) === normEmail(b);
+    case "date":   return dateKey(a) === dateKey(b);
+    case "zip":    return normZip(a) === normZip(b);
+    case "street": return normStreet(a) === normStreet(b);
+    default:       return normText(a) === normText(b);
+  }
+}
+
+function run(){
+  const opt = {
+    nick: $("o-nick").checked,
+    initial: false,
+    blankname: $("o-blankname").checked,
+    audit: false,
+    newrows: false,
+    minConf: 50,
+    date: "MDY",
+    phonefmt: "RAW",
+    tag: "CRM: Phone Contact Match"
+  };
+
+  const headers = S.compass.headers.slice();
+  const rows = S.compass.rows.map(r => r.slice());
+  const extraCols = new Map();
+  function extraCol(name){
+    if (extraCols.has(name)) return extraCols.get(name);
+    headers.push(name);
+    const idx = headers.length - 1;
+    extraCols.set(name, idx);
+    return idx;
+  }
+  const cell = (r, i) => String(r[i] == null ? "" : r[i]).trim();
+  const setCell = (r, i, v) => { while (r.length <= i) r.push(""); r[i] = v; };
+
+  /* --- index the Compass side --- */
+  const byName = new Map(), byNick = new Map(), byEmail = new Map(), byPhone = new Map();
+  const tgtInfo = rows.map((r, i) => {
+    const t = readTarget(r);
+    const fn = normName(t.first), ln = normName(t.last);
+    const info = { i, t, fn, ln, blank: !fn && !ln,
+      emails: [normEmail(t.email)].filter(Boolean),
+      phones: [normPhone(t.mobile), normPhone(t.work_phone)].filter(Boolean) };
+    if (fn && ln){
+      const k = fn + "|" + ln;
+      if (!byName.has(k)) byName.set(k, []);
+      byName.get(k).push(i);
+      nickKeys(t.first).forEach(nk => {
+        const k2 = nk + "|" + ln;
+        if (!byNick.has(k2)) byNick.set(k2, []);
+        byNick.get(k2).push(i);
+      });
+    }
+    info.emails.forEach(e => { if (!byEmail.has(e)) byEmail.set(e, []); byEmail.get(e).push(i); });
+    info.phones.forEach(p => { if (!byPhone.has(p)) byPhone.set(p, []); byPhone.get(p).push(i); });
+    return info;
+  });
+
+  /* --- score every phone contact against its candidates --- */
+  const proposals = [];   // one per phone contact that wants to write somewhere
+  const records = [];     // one per phone contact, for the report
+
+  // Index the phone file by name too: a name-only merge needs exactly one
+  // of that person on BOTH sides, with nicknames folded into the same bucket.
+  const srcs = S.phone.rows.map(readSource);
+  const nameKeysFor = o => {
+    const fn = normName(o.first), ln = normName(o.last);
+    if (!fn || !ln) return [];
+    return opt.nick ? nickKeys(o.first).map(k => k + "|" + ln) : [fn + "|" + ln];
+  };
+  // An email or phone only identifies somebody if it belongs to exactly one
+  // contact in each file. Office lines, info@ addresses and shared mobiles
+  // fail this test and prove nothing.
+  const cEmail = new Map(), cPhone = new Map(), pEmail = new Map(), pPhone = new Map();
+  const bump = (m, k) => { if (k) m.set(k, (m.get(k) || 0) + 1); };
+  tgtInfo.forEach(ti => {
+    new Set(ti.emails).forEach(e => bump(cEmail, e));
+    new Set(ti.phones).forEach(ph => bump(cPhone, ph));
+  });
+  srcs.forEach(o => {
+    bump(pEmail, normEmail(o.email));
+    new Set([normPhone(o.mobile), normPhone(o.work_phone)].filter(Boolean)).forEach(ph => bump(pPhone, ph));
+  });
+  const soleEmail = e => !!e && cEmail.get(e) === 1 && pEmail.get(e) === 1;
+  const solePhone = ph => !!ph && cPhone.get(ph) === 1 && pPhone.get(ph) === 1;
+
+  // Do the two first names actively disagree? A missing one can't disagree
+  // with anything; Christa and Michelle plainly do.
+  const firstNamesAgree = (a, b) => {
+    const x = (normName(a).split(" ")[0] || ""), y = (normName(b).split(" ")[0] || "");
+    if (!x || !y) return true;
+    if (x === y) return true;
+    if (opt.nick){
+      const ka = nickKeys(a), kb = nickKeys(b);
+      if (ka.some(k => kb.indexOf(k) !== -1)) return true;
+    }
+    if (x.length === 1 && y.charAt(0) === x) return true;
+    if (y.length === 1 && x.charAt(0) === y) return true;
+    if (x.length >= 3 && y.indexOf(x) === 0) return true;
+    if (y.length >= 3 && x.indexOf(y) === 0) return true;
+    return false;
+  };
+
+  const phoneByName = new Map();
+  srcs.forEach((o, i) => nameKeysFor(o).forEach(k => {
+    if (!phoneByName.has(k)) phoneByName.set(k, new Set());
+    phoneByName.get(k).add(i);
+  }));
+  const twinCount = i => {
+    const seen = new Set();
+    nameKeysFor(srcs[i]).forEach(k => (phoneByName.get(k) || []).forEach(j => seen.add(j)));
+    return seen.size || 1;
+  };
+
+  S.phone.rows.forEach((prow, pi) => {
+    const s = srcs[pi];
+    const sfn = normName(s.first), sln = normName(s.last);
+    const semail = normEmail(s.email);
+    const sphones = [normPhone(s.mobile), normPhone(s.work_phone)].filter(Boolean);
+    const display = ((s.first || "") + " " + (s.last || "")).trim() || s.email || s.mobile || "(unnamed contact)";
+
+    const cand = new Map();
+    const add = (i, how) => {
+      if (!cand.has(i)) cand.set(i, { i, name:false, nick:false, initial:false, contact:false });
+      cand.get(i)[how] = true;
+    };
+    if (sfn && sln){
+      (byName.get(sfn + "|" + sln) || []).forEach(i => add(i, "name"));
+      if (opt.nick) nickKeys(s.first).forEach(nk => (byNick.get(nk + "|" + sln) || []).forEach(i => add(i, "nick")));
+      if (opt.initial){
+        tgtInfo.forEach(ti => {
+          if (ti.ln === sln && ti.fn && (ti.fn[0] === sfn[0]) && ti.fn !== sfn) add(ti.i, "initial");
+        });
+      }
+    }
+    if (semail) (byEmail.get(semail) || []).forEach(i => add(i, "contact"));
+    sphones.forEach(p => (byPhone.get(p) || []).forEach(i => add(i, "contact")));
+
+    const scored = [];
+    cand.forEach(c => {
+      const ti = tgtInfo[c.i];
+      const emailHit = !!(semail && ti.emails.includes(semail));
+      const phoneHit = sphones.some(p => ti.phones.includes(p));
+      const zipHit = !!(normZip(s.home_zip) && normZip(s.home_zip) === normZip(ti.t.home_zip));
+      const streetHit = !!(normStreet(s.home1) && normStreet(s.home1) === normStreet(ti.t.home1));
+      const nameHit = c.name || (opt.nick && c.nick) || (opt.initial && c.initial && (emailHit || phoneHit));
+      const namesAgree = firstNamesAgree(s.first, ti.t.first);
+      const sharedEmail = emailHit && soleEmail(semail) && namesAgree;
+      const sharedPhone = namesAgree && sphones.some(ph => ti.phones.includes(ph) && solePhone(ph));
+      const identified = sharedEmail || sharedPhone;
+      const namesConflict = !nameHit && !identified && !ti.blank && !!(ti.fn || ti.ln) && !!(sfn || sln);
+
+      let conf = 0;
+      const signals = [];
+      let gotName = true;
+      if (c.name){ conf += 55; signals.push("name"); }
+      else if (c.nick && opt.nick){ conf += 50; signals.push("nickname"); }
+      else if (c.initial && opt.initial){ conf += 34; signals.push("initial"); }
+      else gotName = false;
+      const idBy = !gotName && identified ? (sharedEmail ? "email" : "phone") : "";
+      if (idBy) { conf += 55; signals.push("sole-owner " + idBy); }
+      if (emailHit){ conf += 30; if (idBy !== "email") signals.push("email"); }
+      if (phoneHit){ conf += 26; if (idBy !== "phone") signals.push("phone"); }
+      if (streetHit){ conf += 9; signals.push("street"); }
+      else if (zipHit){ conf += 4; signals.push("zip"); }
+      if (ti.blank && (emailHit || phoneHit)){ conf += 40; signals.push("blank name row"); }
+      conf = Math.min(100, conf);
+
+      scored.push({ i:c.i, conf, signals, emailHit, phoneHit, nameHit, identified, namesConflict,
+                    blank: ti.blank, confirmed: nameHit && (emailHit || phoneHit) });
+    });
+
+    const eligible = scored.filter(c => c.nameHit || c.identified || (opt.blankname && c.blank && (c.emailHit || c.phoneHit)));
+    const conflicts = scored.filter(c => !c.nameHit && !c.identified && c.namesConflict && (c.emailHit || c.phoneHit));
+
+    const rec = { pi, display, s, status:"no_match", conf:0, signals:[], target:null, note:"", changes:[], candidates: scored.length };
+
+    if (!eligible.length){
+      if (conflicts.length){
+        const ti0 = tgtInfo[conflicts[0].i];
+        const clash = !firstNamesAgree(s.first, ti0.t.first);
+        const halfName = !(sfn && sln) || !(ti0.fn && ti0.ln);
+        rec.status = "skipped";
+        rec.note = clash
+          ? "Email or phone lines up, but the first names are two different people"
+          : halfName
+            ? "Email or phone lines up, but one side is missing a first or last name"
+            : "Shares an email or phone with a Compass row under a different name";
+        rec.conf = Math.max.apply(null, conflicts.map(c => c.conf));
+        rec.target = conflicts[0].i;
+        rec.compassEmail = tgtInfo[conflicts[0].i].t.email || "";
+      }
+      records.push(rec);
+      return;
+    }
+
+    eligible.sort((a,b) => b.conf - a.conf);
+    const corroborated = eligible.filter(c => c.emailHit || c.phoneHit);
+    const bail = (cand, note) => {
+      rec.status = "skipped";
+      rec.conf = cand.conf;
+      rec.target = cand.i;
+      rec.compassEmail = tgtInfo[cand.i].t.email || "";
+      rec.note = note;
+      records.push(rec);
+    };
+
+    let pick = null;
+    if (corroborated.length === 1){
+      pick = corroborated[0];
+      if (eligible.length > 1){
+        rec.note = eligible.length + " Compass rows carry this name; one of them also matches on " +
+                   (pick.emailHit ? "email" : "phone");
+      }
+    } else if (corroborated.length > 1){
+      bail(corroborated[0], corroborated.length + " Compass rows match on email or phone — too close to call");
+      return;
+    } else {
+      // Name and nothing else. Only allowed when there is exactly one of this
+      // person in each file, and only when the floor permits a name-only merge.
+      if (opt.minConf > 55){
+        bail(eligible[0], "Name match only, with no email or phone to confirm it");
+        return;
+      }
+      if (eligible.length > 1){
+        bail(eligible[0], eligible.length + " Compass rows carry this name and nothing separates them");
+        return;
+      }
+      const twins = twinCount(pi);
+      if (twins > 1){
+        bail(eligible[0], twins + " contacts in the phone file carry this name");
+        return;
+      }
+      pick = eligible[0];
+    }
+
+    const isIdentity = pick.identified || (opt.blankname && pick.blank && (pick.emailHit || pick.phoneHit));
+    if (pick.conf < opt.minConf && !isIdentity){
+      rec.status = "skipped";
+      rec.conf = pick.conf;
+      rec.target = pick.i;
+      rec.signals = pick.signals;
+      rec.note = "Scored " + pick.conf + ", below the " + opt.minConf + " floor";
+      records.push(rec);
+      return;
+    }
+
+    rec.conf = pick.conf; rec.signals = pick.signals; rec.target = pick.i;
+    rec.compassEmail = tgtInfo[pick.i].t.email || "";
+    rec.pick = pick;
+    proposals.push({ rec, pick, s });
+    records.push(rec);
+  });
+
+  /* --- one Compass row can only receive from one phone contact --- */
+  const byTarget = new Map();
+  proposals.forEach(p => {
+    if (!byTarget.has(p.pick.i)) byTarget.set(p.pick.i, []);
+    byTarget.get(p.pick.i).push(p);
+  });
+  const approved = [];
+  byTarget.forEach((list, ti) => {
+    if (list.length === 1){ approved.push(list[0]); return; }
+    list.forEach(p => {
+      p.rec.status = "skipped";
+      p.rec.note = list.length + " phone contacts point at this same Compass row";
+    });
+  });
+
+  /* --- write --- */
+  let filled = 0, parked = 0, namesAdded = 0, rowsTouched = new Set();
+  const logByRow = new Map();
+  const tagIdx = S.tgt.tags != null ? S.tgt.tags : extraCol("Tags");
+
+  approved.forEach(p => {
+    const { rec, pick, s } = p;
+    const row = rows[pick.i];
+    const ti = tgtInfo[pick.i];
+    const changes = [];
+
+    // names into a blank row
+    if (opt.blankname && ti.blank && (pick.emailHit || pick.phoneHit)){
+      if (s.first && S.tgt.first_name != null && !cell(row, S.tgt.first_name)){ setCell(row, S.tgt.first_name, s.first); changes.push({ f:"First Name", v:s.first, kind:"fill" }); namesAdded++; }
+      if (s.last && S.tgt.last_name != null && !cell(row, S.tgt.last_name)){ setCell(row, S.tgt.last_name, s.last); changes.push({ f:"Last Name", v:s.last, kind:"fill" }); }
+    }
+
+    MERGE_FIELDS.forEach(f => {
+      let val = String(s[f.key] || "").trim();
+      if (!val) return;
+      if (f.type === "date"){
+        // A birth date stamped with the current year or later has no real year
+        // in it — the phone filled in today's. Keep the day, drop the fiction.
+        if (f.key === "birthday"){
+          const d = parseDate(val);
+          if (d && d.y && d.y >= THIS_YEAR) val = "--" + pad2(d.m) + "-" + pad2(d.d);
+        }
+        val = fmtDate(val, opt.date);
+      }
+      if (f.type === "phone") val = fmtPhone(val, opt.phonefmt);
+      let ci = S.tgt[f.key];
+      if (ci == null){
+        const def = TARGETS.find(t => t.key === f.key);   // no such column in the export: make one
+        ci = extraCol(def ? def.label : f.key);
+      }
+      const cur = cell(row, ci);
+      const label = headers[ci] || f.key;
+      if (!cur){
+        setCell(row, ci, val);
+        changes.push({ f: label, v: val, kind: "fill" });
+        filled++;
+      } else if (sameValue(cur, val, f.type)){
+        // already the same value — nothing to do
+      } else {
+        let name = label + " (Phone)";
+        let idx = extraCol(name);
+        if (cell(row, idx)){
+          let n = 2;
+          while (cell(row, extraCol(label + " (Phone " + n + ")"))) n++;
+          name = label + " (Phone " + n + ")";
+          idx = extraCol(name);
+        }
+        setCell(row, idx, val);
+        changes.push({ f: name, v: val, kind: "park", was: cur });
+        parked++;
+      }
+    });
+
+    if (changes.length){
+      rowsTouched.add(pick.i);
+      const cur = cell(row, tagIdx);
+      const has = cur.split(/[;,]/).map(t => t.trim().toLowerCase()).includes(opt.tag.toLowerCase());
+      if (!has) setCell(row, tagIdx, cur ? cur + ", " + opt.tag : opt.tag);
+      if (opt.audit){
+        setCell(row, extraCol("Phone Match Confidence"), String(pick.conf));
+        setCell(row, extraCol("Phone Match Source"), rec.display);
+      }
+      rec.status = (ti.blank && (pick.emailHit || pick.phoneHit)) ? "merged_identity" : "merged";
+      rec.changes = changes;
+
+      const fills = changes.filter(c => c.kind === "fill");
+      const parks = changes.filter(c => c.kind === "park");
+      const bits = ["Matched on " + ((pick.signals && pick.signals.length) ? pick.signals.join(" + ") : "name") +
+                    " (" + pick.conf + ")"];
+      if (fills.length) bits.push("Filled: " + fills.map(c => c.f + " = " + c.v).join("; "));
+      if (parks.length) bits.push("New column: " + parks.map(c => c.f + " = " + c.v).join("; "));
+      rec.log = bits.join(" | ");
+      logByRow.set(pick.i, rec.log);
+    } else {
+      rec.status = "no_change";
+      rec.note = "Matched, but the phone file had nothing Compass was missing";
+    }
+  });
+
+  /* --- optional: append the leftovers --- */
+  let appended = 0;
+  if (opt.newrows){
+    const newTag = "CRM: Phone Contact New";
+    records.filter(r => r.status === "no_match").forEach(rec => {
+      const row = new Array(headers.length).fill("");
+      const s = rec.s;
+      if (S.tgt.first_name != null) row[S.tgt.first_name] = s.first;
+      if (S.tgt.last_name != null) row[S.tgt.last_name] = s.last;
+      MERGE_FIELDS.forEach(f => {
+        const ci = S.tgt[f.key];
+        if (ci == null) return;
+        let v = String(s[f.key] || "").trim();
+        if (!v) return;
+        if (f.type === "date") v = fmtDate(v, opt.date);
+        if (f.type === "phone") v = fmtPhone(v, opt.phonefmt);
+        row[ci] = v;
+      });
+      while (row.length <= tagIdx) row.push("");
+      row[tagIdx] = newTag;
+      rows.push(row);
+      rec.status = "appended";
+      rec.note = "Added as a new row";
+      rec.log = "Added as a new row from the phone file — no Compass match";
+      logByRow.set(rows.length - 1, rec.log);
+      appended++;
+    });
+  }
+
+  rows.forEach(r => { while (r.length < headers.length) r.push(""); });
+
+  const logIdx = headers.length;
+  headers.push("Change log");
+  rows.forEach(r => r.push(""));
+  logByRow.forEach((text, i) => { if (rows[i]) rows[i][logIdx] = text; });
+
+  S.result = {
+    headers, rows, records, opt,
+    touched: Array.from(rowsTouched).sort((a,b) => a - b),
+    stats: {
+      phoneRows: S.phone.rows.length,
+      compassRows: S.compass.rows.length,
+      merged: records.filter(r => r.status === "merged" || r.status === "merged_identity").length,
+      filled, parked, namesAdded, appended,
+      newCols: extraCols.size,
+      skipped: records.filter(r => r.status === "skipped").length,
+      nomatch: records.filter(r => r.status === "no_match").length,
+      nochange: records.filter(r => r.status === "no_change").length,
+      rowsTouched: rowsTouched.size
+    }
+  };
+  renderResults();
+}
+
+/* ============================ results UI ============================ */
+
+const STATUS = {
+  merged:          { label:"Merged", cls:"merged" },
+  merged_identity: { label:"Merged + named", cls:"merged" },
+  appended:        { label:"Added as new", cls:"merged" },
+  no_change:       { label:"Nothing to add", cls:"none" },
+  skipped:         { label:"Not matched", cls:"none" },
+  no_match:        { label:"Not matched", cls:"none" }
+};
+const RANK = { merged:0, merged_identity:0, appended:0, no_change:1, skipped:2, no_match:3 };
+
+function renderResults(){
+  const R = S.result, st = R.stats;
+  $("s4").hidden = false;
+  $("tiles").innerHTML = [
+    ["b", st.merged,  "Contacts merged"],
+    ["",  st.filled,  "Empty cells filled"],
+    ["",  st.parked,  "Parked in new columns"],
+    ["",  st.skipped + st.nomatch, "Not matched"]
+  ].map(t => '<div class="stat ' + t[0] + '"><div class="num">' + t[1].toLocaleString() +
+             '</div><div class="lbl">' + t[2] + '</div></div>').join("");
+
+  $("thead").innerHTML = "<tr><th>Phone contact</th><th>Result</th><th>Confidence</th><th>Compass row</th><th>What changed</th></tr>";
+  renderRows();
+
+  $("run").textContent = "Run again";
+  $("docknote").textContent = st.rowsTouched.toLocaleString() + " Compass rows updated, " +
+    st.newCols + " new columns added. Original columns and row order untouched.";
+  $("foot").hidden = false;
+  $("foot").textContent = S.phoneName + " → " + S.compassName + ".";
+  $("s4").scrollIntoView({ behavior:"smooth", block:"start" });
+}
+
+function renderRows(){
+  const R = S.result;
+  const q = normText($("q").value);
+  let list = R.records.slice().sort((a, b) => (RANK[a.status] ?? 9) - (RANK[b.status] ?? 9) || b.conf - a.conf);
+  if (q){
+    list = list.filter(r => {
+      const hay = normText([r.display, r.s.email, r.s.mobile, r.s.work_phone, r.s.company].join(" "));
+      return hay.includes(q) || normPhone(q) && (normPhone(r.s.mobile) === normPhone(q) || normPhone(r.s.work_phone) === normPhone(q));
+    });
+  }
+  const CAP = 150;
+  const shown = list.slice(0, CAP);
+  $("count").textContent = list.length.toLocaleString() + " of " + R.records.length.toLocaleString() + " phone contacts";
+  $("more").hidden = list.length <= CAP;
+  $("more").textContent = "Only the first " + CAP + " are shown — filter above to narrow it down.";
+
+  if (!shown.length){
+    $("tbody").innerHTML = '<tr><td colspan="5" class="empty">Nothing here.</td></tr>';
+    return;
+  }
+  $("tbody").innerHTML = shown.map(r => {
+    const st = STATUS[r.status] || { label:r.status, cls:"none" };
+    const tgtRow = r.target != null ? S.compass.rows[r.target] : null;
+    let tname = "—";
+    if (tgtRow){
+      const t = readTarget(tgtRow);
+      tname = ((t.first || "") + " " + (t.last || "")).trim() || t.email || "(row " + (r.target + 2) + ")";
+      tname = esc(tname) + ' <span class="mono" style="color:var(--muted)">row ' + (r.target + 2) + "</span>";
+    }
+    const conf = r.conf
+      ? '<div class="meter"><div class="bar"><i style="width:' + r.conf + '%"></i></div><span class="mono">' + r.conf + "</span></div>"
+      : '<span style="color:var(--muted)">—</span>';
+    let changes = "";
+    if (r.changes && r.changes.length){
+      changes = r.changes.map(c => c.kind === "fill"
+        ? "<b>" + esc(c.f) + "</b> ← " + esc(trunc(c.v))
+        : '<span class="newcol">' + esc(c.f) + "</span> ← " + esc(trunc(c.v)) + ' <span style="opacity:.7">(kept ' + esc(trunc(c.was)) + ")</span>"
+      ).join("<br>");
+    } else if (r.note){
+      changes = esc(r.note);
+    } else if (r.status === "no_match"){
+      changes = "No Compass row with this name, email or phone";
+    }
+    if (st.cls !== "merged") changes = '<span style="opacity:.75">' + changes + "</span>";
+    const sig = r.signals && r.signals.length ? '<div class="chg" style="margin-top:3px">matched on ' + esc(r.signals.join(" + ")) + "</div>" : "";
+    const tint = "";
+    return "<tr" + tint + "><td class='nm'>" + esc(r.display) +
+      (r.s.email ? '<div class="chg mono" style="font-weight:400">' + esc(r.s.email) + "</div>" : "") +
+      "</td><td><span class='pill " + st.cls + "'>" + st.label + "</span>" + sig +
+      "</td><td>" + conf + "</td><td>" + tname + "</td><td class='chg'>" + changes + "</td></tr>";
+  }).join("");
+}
+function trunc(v, n){ v = String(v || ""); n = n || 42; return v.length > n ? v.slice(0, n-1) + "…" : v; }
+
+/* ============================ downloads ============================ */
+
+function baseName(n, fallback){ return String(n || fallback).replace(/\.csv$/i, ""); }
+
+// 1. Compass Cross-Reference — the whole Compass file with phone data folded in
+function downloadMerged(){
+  const R = S.result; if (!R) return;
+  offerFile(baseName(S.compassName, "compass-contacts") + " — Compass Cross-Reference.csv",
+            toCSV(R.headers, R.rows));
+}
+
+// 2. Phone Cross-Reference — same file, only the rows that gained data
+function downloadTouched(){
+  const R = S.result; if (!R) return;
+  if (!R.touched.length){ toast("No rows were updated, so there is nothing to put in this file."); return; }
+  offerFile(baseName(S.compassName, "compass-contacts") + " — Phone Cross-Reference.csv",
+            toCSV(R.headers, R.touched.map(i => R.rows[i])));
+}
+
+// 3. Full Phone File — every phone row, tidied, Keep?/Remove? at C and D,
+//    the matched Compass email at the end.
+const JUNK_VALUES = new Set(["n a","na","none","null","nil","unknown","tbd","none given","no","x","xx","xxx"]);
+const DROP_HEADERS = new Set(["name","full name","fullname","display name","displayname",
+  "formatted name","file as","sort name","phonetic full name","nickname"]);
+
+function tidyCell(v){
+  let t = String(v == null ? "" : v);
+  t = t.replace(/[\u0000-\u001F\u007F]/g, " ");                     // control characters
+  t = t.replace(/[\uD800-\uDFFF]/g, "");                            // emoji and other astral junk
+  t = t.replace(/[\u2190-\u27BF\u2B00-\u2BFF\uFE0F\u2022\u00B7\u25A0-\u25FF]/g, " "); // arrows, bullets, dingbats
+  t = t.replace(/\s+/g, " ").trim();
+  t = t.replace(/^[\s*|~^\\\/,;:_+=-]+/, "").replace(/[\s*|~^\\\/,;:_+=-]+$/, "").trim();
+  if (!t) return "";
+  if (!/[a-z0-9]/i.test(t)) return "";                              // nothing but symbols left
+  const key = t.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  if (JUNK_VALUES.has(key)) return "";
+  return t;
+}
+
+function tidyPhoneCell(v){
+  const t = tidyCell(v);
+  if (!t) return "";
+  return t.split(/\s*:::\s*|\s*;\s*/).map(part => {
+    const one = part.trim();
+    if (!one) return "";
+    if (/[a-z]/i.test(one)) return one;                             // "ext 204", "iPhone"
+    let d = one.replace(/\D/g, "");
+    if (d.length === 11 && d.charAt(0) === "1") d = d.slice(1);
+    if (d.length === 10) return d.slice(0,3) + "-" + d.slice(3,6) + "-" + d.slice(6);
+    return one;                                                     // short codes, international
+  }).filter(Boolean).join(", ");
+}
+
+const isTypeColumn = h => {
+  const k = normText(h);
+  if (k === "type" || k === "label" || k === "labels") return true;
+  return /\btype\b/.test(k) && /(phone|mobile|cell|email|e mail|address|im|url|website|number|event|relation)/.test(k);
+};
+const isPhoneColumn = h => /\b(phone|mobile|cell|tel|fax)\b/.test(normText(h));
+
+function downloadPhoneFile(){
+  const R = S.result; if (!R) return;
+  const src = S.phone;
+
+  // Work out which columns survive: no phone-type columns, no full-name
+  // columns, nothing that is empty from top to bottom.
+  const keep = [];
+  src.headers.forEach((h, i) => {
+    if (DROP_HEADERS.has(normText(h))) return;
+    if (isTypeColumn(h)) return;
+    let any = false;
+    for (let r = 0; r < src.rows.length; r++){ if (tidyCell(src.rows[r][i])){ any = true; break; } }
+    if (any) keep.push(i);
+  });
+  if (!keep.length){ toast("Nothing left in the phone file once the empty columns come out."); return; }
+
+  const phoneCol = keep.map(i => isPhoneColumn(src.headers[i]));
+  const at = Math.min(2, keep.length);
+  const headers = keep.slice(0, at).map(i => src.headers[i])
+    .concat(["Keep?", "Remove?"], keep.slice(at).map(i => src.headers[i]), ["Compass Email", "Change log"]);
+
+  const emailBy = new Map(), logBy = new Map();
+  R.records.forEach(r => {
+    if (r.compassEmail) emailBy.set(r.pi, r.compassEmail);
+    logBy.set(r.pi, r.log ? r.log
+      : r.note ? "Not merged: " + r.note + (r.conf ? " (" + r.conf + ")" : "")
+      : "Not merged: nothing in Compass matches this contact");
+  });
+
+  const rows = src.rows.map((r, i) => {
+    const cells = keep.map((c, n) => phoneCol[n] ? tidyPhoneCell(r[c]) : tidyCell(r[c]));
+    return cells.slice(0, at).concat(["", ""], cells.slice(at),
+             [tidyCell(emailBy.get(i) || ""), logBy.get(i) || ""]);
+  });
+
+  offerFile(baseName(S.phoneName, "phone-export") + " — Full Phone File.csv", toCSV(headers, rows));
+}
+
+$("run").addEventListener("click", () => {
+  $("run").disabled = true;
+  $("run").textContent = "Matching…";
+  setTimeout(() => {
+    try { run(); }
+    catch (e){ console.error(e); toast("Something went wrong during the match: " + e.message); }
+    $("run").disabled = false;
+    $("run").textContent = S.result ? "Run again" : "Run the match";
+  }, 30);
+});
+$("dl-merged").addEventListener("click", downloadMerged);
+$("dl-touched").addEventListener("click", downloadTouched);
+$("dl-audit").addEventListener("click", downloadPhoneFile);
+$("q").addEventListener("input", () => { if (S.result) renderRows(); });
+
+["o-nick","o-blankname"].forEach(id => {
+  $(id).addEventListener("change", () => { if (S.result) $("run").textContent = "Run again"; });
+});
+</script>
+</body>
+</html>
