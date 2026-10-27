@@ -279,7 +279,7 @@
       </button>
       <button class="dl" id="dl-touched">
         <span class="dl-title">Phone Cross-Reference</span>
-        <span class="dl-sub">The same file and the same Change log, cut down to only the rows that actually had data added.</span>
+        <span class="dl-sub">A change file: only the rows that gained data, and within them only the cells that were written. First name, last name and every email column come through in full so it can be matched on import.</span>
         <span class="dl-cta"><svg class="dl-ico" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 1.5v8.5m0 0 3.2-3.2M8 10l-3.2-3.2M2 11.5v1.6A1.4 1.4 0 0 0 3.4 14.5h9.2A1.4 1.4 0 0 0 14 13.1v-1.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Download CSV</span>
       </button>
       <button class="dl" id="dl-audit">
@@ -317,6 +317,7 @@
       <li>Existing Compass values are never overwritten, reformatted or removed. Original columns and row order stay exactly as exported; conflicting phone values are appended as "(Phone)" columns at the end. Every updated row is tagged "CRM: Phone Contact Match".</li>
       <li>These phone columns are ignored on purpose: gender, categories, web page, related name, department, country, country code, pager, business fax, home fax, nickname, display name.</li>
       <li>The Full Phone File is cleaned on the way out, and only there — the merge itself never reformats anything. Numbers are rewritten as 954-555-0123 where ten digits are present, control characters, emoji and stray punctuation are stripped, values that are only symbols or placeholders ("n/a", "unknown") are blanked, and three kinds of column are dropped: phone and email type columns, full-name or display-name columns, and any column that is empty from top to bottom.</li>
+      <li>The Phone Cross-Reference is a change file rather than a copy. It holds only the rows that gained something, only the columns that were written to anywhere in the run, and within those columns only the cells that were actually written — every other cell is left blank. First name, last name, every email column and the Change log always come through in full, so the file still has something to match on.</li>
       <li>All three files end with a Change log column reading "Matched on name + email (85) | Filled: Primary Mobile Number = 954-555-0123 | New column: Primary Email (Phone) = old@address.com". In the phone file it also records why a contact did not merge.</li>
       <li>This runs entirely in your browser — no data leaves your machine.</li>
     </ul>
@@ -1174,6 +1175,7 @@ function run(){
   /* --- write --- */
   let filled = 0, parked = 0, namesAdded = 0, rowsTouched = new Set();
   const logByRow = new Map();
+  const editedByRow = new Map();
   const tagIdx = S.tgt.tags != null ? S.tgt.tags : extraCol("Tags");
 
   approved.forEach(p => {
@@ -1184,8 +1186,8 @@ function run(){
 
     // names into a blank row
     if (opt.blankname && ti.blank && (pick.emailHit || pick.phoneHit)){
-      if (s.first && S.tgt.first_name != null && !cell(row, S.tgt.first_name)){ setCell(row, S.tgt.first_name, s.first); changes.push({ f:"First Name", v:s.first, kind:"fill" }); namesAdded++; }
-      if (s.last && S.tgt.last_name != null && !cell(row, S.tgt.last_name)){ setCell(row, S.tgt.last_name, s.last); changes.push({ f:"Last Name", v:s.last, kind:"fill" }); }
+      if (s.first && S.tgt.first_name != null && !cell(row, S.tgt.first_name)){ setCell(row, S.tgt.first_name, s.first); changes.push({ f:"First Name", v:s.first, kind:"fill", ci:S.tgt.first_name }); namesAdded++; }
+      if (s.last && S.tgt.last_name != null && !cell(row, S.tgt.last_name)){ setCell(row, S.tgt.last_name, s.last); changes.push({ f:"Last Name", v:s.last, kind:"fill", ci:S.tgt.last_name }); }
     }
 
     MERGE_FIELDS.forEach(f => {
@@ -1210,7 +1212,7 @@ function run(){
       const label = headers[ci] || f.key;
       if (!cur){
         setCell(row, ci, val);
-        changes.push({ f: label, v: val, kind: "fill" });
+        changes.push({ f: label, v: val, kind: "fill", ci });
         filled++;
       } else if (sameValue(cur, val, f.type)){
         // already the same value — nothing to do
@@ -1224,7 +1226,7 @@ function run(){
           idx = extraCol(name);
         }
         setCell(row, idx, val);
-        changes.push({ f: name, v: val, kind: "park", was: cur });
+        changes.push({ f: name, v: val, kind: "park", was: cur, ci: idx });
         parked++;
       }
     });
@@ -1249,6 +1251,9 @@ function run(){
       if (parks.length) bits.push("New column: " + parks.map(c => c.f + " = " + c.v).join("; "));
       rec.log = bits.join(" | ");
       logByRow.set(pick.i, rec.log);
+      const touchedCells = new Set(changes.map(c => c.ci).filter(c => c != null));
+      touchedCells.add(tagIdx);
+      editedByRow.set(pick.i, touchedCells);
     } else {
       rec.status = "no_change";
       rec.note = "Matched, but the phone file had nothing Compass was missing";
@@ -1294,6 +1299,7 @@ function run(){
   S.result = {
     headers, rows, records, opt,
     touched: Array.from(rowsTouched).sort((a,b) => a - b),
+    edited: editedByRow,
     stats: {
       phoneRows: S.phone.rows.length,
       compassRows: S.compass.rows.length,
@@ -1408,12 +1414,31 @@ function downloadMerged(){
             toCSV(R.headers, R.rows));
 }
 
-// 2. Phone Cross-Reference — same file, only the rows that gained data
+// 2. Phone Cross-Reference — only the rows that gained data, and within those
+//    rows only the cells that were actually written. Names and every email
+//    column always come through in full, so the file can be matched on import.
 function downloadTouched(){
   const R = S.result; if (!R) return;
   if (!R.touched.length){ toast("No rows were updated, so there is nothing to put in this file."); return; }
+
+  const logIdx = R.headers.indexOf("Change log");
+  const always = new Set();
+  if (S.tgt.first_name != null) always.add(S.tgt.first_name);
+  if (S.tgt.last_name != null) always.add(S.tgt.last_name);
+  R.headers.forEach((h, i) => { if (/email/i.test(h)) always.add(i); });
+  if (logIdx >= 0) always.add(logIdx);
+
+  const edited = new Set();
+  R.touched.forEach(i => (R.edited.get(i) || []).forEach(c => edited.add(c)));
+
+  const cols = R.headers.map((h, i) => i).filter(i => always.has(i) || edited.has(i));
+  const rows = R.touched.map(i => {
+    const written = R.edited.get(i) || new Set();
+    return cols.map(c => (always.has(c) || written.has(c)) ? R.rows[i][c] : "");
+  });
+
   offerFile(baseName(S.compassName, "compass-contacts") + " — Phone Cross-Reference.csv",
-            toCSV(R.headers, R.touched.map(i => R.rows[i])));
+            toCSV(cols.map(c => R.headers[c]), rows));
 }
 
 // 3. Full Phone File — every phone row, tidied, Keep?/Remove? at C and D,
