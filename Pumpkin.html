@@ -249,7 +249,7 @@
       <input type="checkbox" id="o-nick" checked>
       <label for="o-nick">
         <span class="opt-title">Treat nicknames as the same name</span>
-        <span class="opt-sub">Bob matches Robert, Liz matches Elizabeth, and about eighty more. A nickname carries the same weight as an exact name: it merges on its own when it is the only Compass row that matches, and when several rows match it merges only into the one that also shares a direct email or phone. Raising the confidence floor above 50 stops a nickname from merging on a name alone. On by default — uncheck to require exact first names.</span>
+        <span class="opt-sub">Bob matches Robert, Liz matches Elizabeth, and about a hundred more. Only a full name and its own short forms ever match: Stephen and Steven are different names and never meet, though Steve matches either. Same for Carol and Carole, Deborah and Debra, Jeffrey and Geoffrey. A nickname carries the same weight as an exact name: it merges on its own when it is the only Compass row that matches, and when several rows match it merges only into the one that also shares a direct email or phone. Raising the confidence floor above 50 stops a nickname from merging on a name alone. On by default — uncheck to require exact first names.</span>
       </label>
     </div>
 
@@ -303,6 +303,7 @@
     <summary>Assumptions this tool makes</summary>
     <ul>
       <li>Columns on both files are auto-detected by header name and listed in the Column mapping block, where you can override any of them. First and last name must be mapped on both files before the tool will run.</li>
+      <li>Nickname matching pairs a full name with its own short forms only — Deborah with Deb or Debbie, Jeffrey with Jeff. Two full names never match each other, however close the spelling: Deborah and Debra are separate people, as are Carol and Carole, Stephen and Steven, Jeffrey and Geoffrey. A short form shared by two full names, like Steve or Pat, matches both without joining them together.</li>
       <li>Each candidate scores points for what the two records share: 55 for an exact first + last name, 50 for a nickname, 30 for a matching email, 26 for a matching phone, 9 for an identical street, 4 for a matching zip. 50 is the bar to clear. Names are compared with accents, punctuation and suffixes (Jr, III, MD) stripped.</li>
       <li>A merge on the name alone is allowed only when that name appears exactly once in each file — nicknames folded together, so Rob and Robert count as the same person when checking. Where it appears more than once on either side, the merge has to be backed by a matching email or phone instead.</li>
       <li>A name match needs a first <em>and</em> a last name on both sides. A phone contact saved as just "Rob", or a Compass row holding only "Robert", never matches on the name alone — though either will still merge if an email or phone identifies them. A Compass row with no name at all is matched on email or phone and has its name written in.</li>
@@ -436,49 +437,150 @@ function normStreet(s){
 }
 
 /* ---- nicknames ---- */
-const NICK_SETS = [
- ["robert","rob","bob","bobby","bert"],["william","will","bill","billy","willy"],["michael","mike","mick","mickey"],
- ["james","jim","jimmy","jamie"],["david","dave","davey"],["daniel","dan","danny"],["thomas","tom","tommy"],
- ["christopher","chris","topher"],["katherine","catherine","kathryn","kate","katie","kathy","cathy","kat"],
- ["elizabeth","liz","lizzie","beth","betsy","betty","eliza"],["richard","rick","rich","dick","ricky"],
- ["stephen","steven","steve"],["joseph","joe","joey"],["anthony","tony"],["matthew","matt"],
- ["nicholas","nick","nicky"],["benjamin","ben","benny"],["samuel","sam","sammy"],["andrew","andy","drew"],
- ["jennifer","jen","jenny","jenn"],["jessica","jess","jessie"],["alexander","alex","xander"],["alexandra","alex","sandra","sasha"],
- ["gregory","greg"],["edward","ed","eddie","ted","teddy"],["patricia","pat","patty","trish","tricia"],["patrick","pat","paddy"],
- ["deborah","debra","deb","debbie"],["susan","sue","susie","suzy"],["timothy","tim","timmy"],["ronald","ron","ronnie"],
- ["donald","don","donnie"],["kenneth","ken","kenny"],["lawrence","larry","laurence"],["gerald","jerry","gerry"],
- ["charles","charlie","chuck","chas"],["francis","frank","frankie"],["frances","fran","francie"],["henry","hank","harry"],
- ["john","jack","johnny","jon"],["jonathan","jon","jonny"],["margaret","maggie","meg","peggy","marge"],
- ["rebecca","becky","becca"],["victoria","vicky","tori"],["philip","phillip","phil"],["arthur","art","artie"],
- ["cynthia","cindy"],["amanda","mandy"],["sandra","sandy"],["barbara","barb","babs"],["judith","judy"],
- ["caroline","carolyn","carol"],["constance","connie"],["dorothy","dot","dottie"],["abigail","abby","gail"],
- ["nathan","nate"],["nathaniel","nate","nathan"],["zachary","zach","zack"],["joshua","josh"],["jacob","jake"],
- ["maxwell","max"],["raymond","ray"],["walter","walt"],["eugene","gene"],["martin","marty"],["mitchell","mitch"],
- ["russell","russ"],["vincent","vince","vinny"],["wesley","wes"],["theodore","ted","teddy","theo"],
- ["albert","al","bert"],["alfred","al","fred"],["frederick","fred","freddy"],["harold","hal","harry"],
- ["howard","howie"],["leonard","len","lenny"],["marcus","marc","mark"],["peter","pete"],["ralph","ralphie"],
- ["roger","rog"],["scott","scotty"],["terrence","terry"],["vernon","vern"],["angela","angie"],["christine","christina","chris","chrissy","tina"],
- ["danielle","dani"],["diana","diane","di"],["eleanor","ellie","nell"],["evelyn","evie"],["gabriel","gabe"],
- ["gabriella","gabby"],["isabella","bella","izzy"],["kimberly","kim"],["laura","lauren","laurie"],["linda","lindy"],
- ["lisa","liz"],["melissa","mel","missy"],["michelle","shelly","mich"],["natalie","nat"],["nancy","nan"],
- ["olivia","liv","livy"],["pamela","pam"],["rachel","rach"],["samantha","sam","sammy"],["sharon","shari"],
- ["stephanie","steph"],["theresa","teresa","terry","tess"],["veronica","ronnie"],["virginia","ginny","ginger"],
- ["yolanda","yoli"],["jose","pepe"],["francisco","paco","pancho"],["guillermo","memo"],["eduardo","eddy","lalo"],
- ["antonio","tony","tono"],["alejandro","alex","ale"],["maria","mary","mari"],["guadalupe","lupe"],["ignacio","nacho"]
-];
+const NICK_FULL = {
+ robert:["rob","robbie","robby","bob","bobby","bobbie"],
+ william:["will","willie","willy","bill","billy","billie"],
+ michael:["mike","mikey","mick","micky","mickey"],
+ james:["jim","jimmy","jamie"],
+ david:["dave","davey"],
+ daniel:["dan","danny","dannie"],
+ thomas:["tom","tommy"],
+ christopher:["chris","topher"],
+ richard:["rich","richie","rick","ricky","dick"],
+ stephen:["steve","stevie"],
+ steven:["steve","stevie"],
+ joseph:["joe","joey"],
+ anthony:["tony"],
+ matthew:["matt","matty"],
+ nicholas:["nick","nicky","nico"],
+ benjamin:["ben","benny","benji"],
+ samuel:["sam","sammy"],
+ andrew:["andy","drew"],
+ alexander:["alex","xander"],
+ alexandra:["alex","allie","lexi","sasha"],
+ gregory:["greg","gregg"],
+ edward:["ed","eddie","ted","teddy","ned"],
+ patrick:["pat","paddy"],
+ patricia:["pat","patty","patti","trish","tricia","patsy"],
+ timothy:["tim","timmy"],
+ ronald:["ron","ronnie"],
+ donald:["don","donnie"],
+ kenneth:["ken","kenny"],
+ lawrence:["larry"],
+ laurence:["larry"],
+ gerald:["gerry","jerry"],
+ charles:["charlie","charley","chuck","chas"],
+ francis:["frank","frankie"],
+ frances:["fran","francie","franny"],
+ henry:["hank","harry"],
+ john:["johnny","jack"],
+ jonathan:["jon","jonny"],
+ jonathon:["jon","jonny"],
+ margaret:["maggie","meg","peg","peggy","margie","marge"],
+ rebecca:["becky","becca","bekah","reba"],
+ victoria:["vicky","vicki","tori"],
+ philip:["phil"],
+ phillip:["phil"],
+ arthur:["art","artie"],
+ nathan:["nate"],
+ nathaniel:["nate","nat"],
+ zachary:["zach","zack"],
+ joshua:["josh"],
+ jacob:["jake"],
+ maxwell:["max"],
+ raymond:["ray"],
+ walter:["walt","wally"],
+ eugene:["gene"],
+ martin:["marty"],
+ mitchell:["mitch"],
+ russell:["russ","rusty"],
+ vincent:["vince","vinny"],
+ wesley:["wes"],
+ theodore:["theo","ted","teddy"],
+ albert:["albie","bert","al"],
+ alfred:["alfie","al"],
+ frederick:["fred","freddy","freddie"],
+ harold:["hal"],
+ howard:["howie"],
+ leonard:["len","lenny"],
+ peter:["pete"],
+ douglas:["doug"],
+ bradley:["brad"],
+ jeffrey:["jeff"],
+ geoffrey:["geoff","jeff"],
+ terrence:["terry"],
+ terence:["terry"],
+ vernon:["vern"],
+ elizabeth:["liz","lizzie","lizzy","beth","betsy","betty","bess","bessie","eliza","libby"],
+ katherine:["kate","katie","katy","kathy","kat"],
+ catherine:["cate","cathy","kate","katie","kat"],
+ kathryn:["kathy","kate","katie","kat"],
+ jennifer:["jen","jenny","jenn","jennie","jenni"],
+ jessica:["jess","jessie"],
+ deborah:["deb","debbie","debby"],
+ debra:["deb","debbie","debby"],
+ susan:["sue","susie","suzy"],
+ cynthia:["cindy"],
+ kimberly:["kim","kimmy"],
+ samantha:["sam","sammy","sammie"],
+ amanda:["mandy"],
+ barbara:["barb","barbie","babs"],
+ isabella:["bella","izzy"],
+ gabriella:["gabby","gabi"],
+ gabriel:["gabe"],
+ christina:["chris","tina","christy","chrissy"],
+ christine:["chris","christy","chrissy","chrissie"],
+ sandra:["sandy"],
+ angela:["angie"],
+ dorothy:["dot","dottie","dolly"],
+ virginia:["ginny"],
+ judith:["judy"],
+ constance:["connie"],
+ abigail:["abby","abbie"],
+ eleanor:["ellie","nell","nellie"],
+ evelyn:["evie"],
+ danielle:["dani"],
+ melissa:["mel","missy"],
+ michelle:["shelly"],
+ natalie:["nat","nattie"],
+ nancy:["nan"],
+ olivia:["liv","livy"],
+ pamela:["pam"],
+ stephanie:["steph"],
+ stefanie:["steph"],
+ theresa:["terri","terry","tess"],
+ teresa:["terri","terry","tess"],
+ veronica:["ronnie"],
+ caroline:["carrie"],
+ laura:["laurie"],
+ julia:["jules"],
+ jose:["pepe"],
+ francisco:["paco","pancho","cisco"],
+ guillermo:["memo"],
+ ignacio:["nacho"],
+ eduardo:["lalo"],
+ antonio:["tono"],
+ alejandro:["jandro"],
+ guadalupe:["lupe"]
+};
+
+// Keys for a name: itself, plus every full name it is a short form of.
+// Two full names share no key, so Stephen and Steven never match each other,
+// while Steve matches both.
 const NICK = (() => {
   const m = new Map();
-  NICK_SETS.forEach((set, i) => set.forEach(n => {
-    if (!m.has(n)) m.set(n, []);
-    m.get(n).push("g" + i);
-  }));
+  const add = (k, v) => { if (!m.has(k)) m.set(k, new Set()); m.get(k).add(v); };
+  Object.keys(NICK_FULL).forEach(full => {
+    add(full, full);
+    NICK_FULL[full].forEach(short => { add(short, short); add(short, full); });
+  });
   return m;
 })();
 function nickKeys(first){
   const f = normName(first).split(" ")[0] || "";
   if (!f) return [];
-  const g = NICK.get(f);
-  return g ? g.slice() : ["=" + f];
+  const set = NICK.get(f);
+  return set ? Array.from(set) : ["=" + f];
 }
 
 /* ---- addresses ---- */
@@ -1001,8 +1103,6 @@ function run(){
     }
     if (x.length === 1 && y.charAt(0) === x) return true;
     if (y.length === 1 && x.charAt(0) === y) return true;
-    if (x.length >= 3 && y.indexOf(x) === 0) return true;
-    if (y.length >= 3 && x.indexOf(y) === 0) return true;
     return false;
   };
 
