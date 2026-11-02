@@ -306,6 +306,7 @@
       <li>Nickname matching pairs a full name with its own short forms only — Deborah with Deb or Debbie, Jeffrey with Jeff. Two full names never match each other, however close the spelling: Deborah and Debra are separate people, as are Carol and Carole, Stephen and Steven, Jeffrey and Geoffrey. A short form shared by two full names, like Steve or Pat, matches both without joining them together.</li>
       <li>Each candidate scores points for what the two records share: 55 for an exact first + last name, 50 for a nickname, 30 for a matching email, 26 for a matching phone, 9 for an identical street, 4 for a matching zip. 50 is the bar to clear. Names are compared with accents, punctuation and suffixes (Jr, III, MD) stripped.</li>
       <li>A merge on the name alone is allowed only when that name appears exactly once in each file — nicknames folded together, so Rob and Robert count as the same person when checking. Where it appears more than once on either side, the merge has to be backed by a matching email or phone instead.</li>
+      <li>The tag is only ever written to a Tags column. Where the export has none it gets one, created at the end of the file — it is never written into Groups or any other column that happens to hold labels.</li>
       <li>A name match needs a first <em>and</em> a last name on both sides. A phone contact saved as just "Rob", or a Compass row holding only "Robert", never matches on the name alone — though either will still merge if an email or phone identifies them. A Compass row with no name at all is matched on email or phone and has its name written in.</li>
       <li>Where several Compass rows match one contact, the merge only goes into the row that also shares a direct email or phone, and only if exactly one row does. Where several phone contacts land on one Compass row, none of them merge.</li>
       <li>A Compass row with no name at all is matched on email or phone alone, and has its first and last name written in from the phone export.</li>
@@ -696,7 +697,7 @@ function fmtPhone(raw, mode){
 const TARGETS = [
   { g:"Identity", key:"first_name", label:"First Name", type:"name",  guesses:["first name","firstname","given name","first"] },
   { g:"Identity", key:"last_name",  label:"Last Name",  type:"name",  guesses:["last name","lastname","family name","surname","last"] },
-  { g:"Identity", key:"tags",       label:"Tags",       type:"tags",  guesses:["tags","tag","labels","groups"] },
+  { g:"Identity", key:"tags",       label:"Tags",       type:"tags",  guesses:["tags","tag","contact tags","compass tags"] },
   { g:"Contact",  key:"mobile",     label:"Primary Mobile Number", type:"phone", guesses:["primary mobile number","primary mobile phone","mobile number","mobile phone","cell phone","primary phone","mobile","cell"] },
   { g:"Contact",  key:"work_phone", label:"Primary Work Phone",    type:"phone", guesses:["primary work phone","work phone","business phone","office phone","work number"] },
   { g:"Contact",  key:"email",      label:"Primary Email",         type:"email", guesses:["primary email","primary email address","email address","email","e mail"] },
@@ -836,6 +837,7 @@ function ready(){
     return;
   }
   S.tgt = autoMap(S.compass.headers, TARGETS);
+  if (S.tgt.tags != null && !/tag/i.test(S.compass.headers[S.tgt.tags] || "")) delete S.tgt.tags;
   S.src = autoMap(S.phone.headers, SOURCES);
   // don't let a combined address column win if the components were found
   ["home","work"].forEach(p => {
